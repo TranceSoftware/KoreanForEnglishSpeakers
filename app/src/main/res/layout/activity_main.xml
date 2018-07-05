@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.joshua.koreancards.MainActivity">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:id="@+id/StudyButton"
+        android:text="Study"
+        android:textSize="35dp"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:layout_below="@id/StudyButton"
+        android:id="@+id/DataButton"
+        android:text="Data"
+        android:textSize="35dp"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:layout_below="@id/DataButton"
+        android:id="@+id/DictionaryButton"
+        android:text="Dictionary"
+        android:textSize="35dp"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:layout_below="@id/DictionaryButton"
+        android:id="@+id/SettingsButton"
+        android:text="Settings"
+        android:textSize="35dp"/>
+
+
+
+</RelativeLayout>

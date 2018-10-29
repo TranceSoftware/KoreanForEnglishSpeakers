@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,7 +38,10 @@ public class StudyActivity extends Activity {
     private Cell currentCell = null;
 
     private int index=0;
-    private Button koreanWordButton, showAnswerButton, wrongAnswerButton, correctAnswerButton;
+    private ArrayList<Button> buttonList = new ArrayList<>();
+    private Button koreanWordButton, showAnswerButton, wrongAnswerButton, correctAnswerButton, timerButton;
+    private Button item0, item1, item2, item3, item4, item5, item6, item7, item8, item9;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +55,28 @@ public class StudyActivity extends Activity {
         showAnswerButton=findViewById(R.id.ShowAnswerButton);
         wrongAnswerButton=findViewById(R.id.WrongAnswerButton);
         correctAnswerButton=findViewById(R.id.CorrectAnswerButton);
+        timerButton=findViewById(R.id.TimerButton);
+        item0=findViewById(R.id.Item0);
+        item1=findViewById(R.id.Item1);
+        item2=findViewById(R.id.Item2);
+        item3=findViewById(R.id.Item3);
+        item4=findViewById(R.id.Item4);
+        item5=findViewById(R.id.Item5);
+        item6=findViewById(R.id.Item6);
+        item7=findViewById(R.id.Item7);
+        item8=findViewById(R.id.Item8);
+        item9=findViewById(R.id.Item9);
+        buttonList.add(item0);
+        buttonList.add(item1);
+        buttonList.add(item2);
+        buttonList.add(item3);
+        buttonList.add(item4);
+        buttonList.add(item5);
+        buttonList.add(item6);
+        buttonList.add(item7);
+        buttonList.add(item8);
+        buttonList.add(item8);
+
         //add in the resuming aspect later or just looped through new words and move the ones that have streaks
         handleBundle(savedInstanceState);
 //        for(int i=0;i<7;i++) {
@@ -62,7 +89,6 @@ public class StudyActivity extends Activity {
         koreanWordButton.setText(currentCell.getKorean());
 //        Log.d(DEBUG_TAG, currentCell.getIndex() + "\t" + currentCell.getKorean() + "\t" + currentCell.getEnglish());
         showAnswerButton.setText("?");
-
         koreanWordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -81,6 +107,7 @@ public class StudyActivity extends Activity {
             public void onClick(View v) {
                 answerMade(false, currentCell);
                 showAnswerButton.setText("?");
+                updateDisplay(false, currentCell);
                 currentCell = nextCard(currentCell);
                 koreanWordButton.setText(currentCell.getKorean());
             }
@@ -98,8 +125,11 @@ public class StudyActivity extends Activity {
 //                koreanWordButton.setText(koreanWords.get(index));
                 answerMade(true, currentCell);
                 showAnswerButton.setText("?");
+                //change text displayed or set to audio i.e. hide
+                updateDisplay(true, currentCell);
                 currentCell = nextCard(currentCell);
                 koreanWordButton.setText(currentCell.getKorean() + "\t" + currentCell.getSessionStreak());
+
                 Log.d(DEBUG_TAG, "NewWordList");
                 for(int i=0;i<newWordsList.size();i++) {
                     Log.d(DEBUG_TAG, i + "\t" + newWordsList.get(i).getKorean() + "\t" + Integer.toString(newWordsList.get(i).getCardsBetween()) + "\t" + newWordsList.get(i).getRetrievalStreak() + "\t" + (newWordsList.get(i).getMilliSeconds() - System.currentTimeMillis()));
@@ -250,6 +280,55 @@ public class StudyActivity extends Activity {
 //            c.setMiliSeconds(System.currentTimeMillis() + (1000 * c.getWaitTime(c.getStreak())));
 //        }
 //    }
+    public void createDisplayDeck() {
+        int[] topCoord = new int[2];
+        timerButton.getLocationOnScreen(topCoord);
+        Log.d(DEBUG_TAG, topCoord[0] + " " + topCoord[1]);
+        int[] bottomCoord = new int[2];
+        koreanWordButton.getLocationOnScreen(bottomCoord);
+        Log.d(DEBUG_TAG, bottomCoord[0] + " " + bottomCoord[1]);
+        //calc difference
+        int[] screenSpace = new int[]{bottomCoord[0]-topCoord[0], bottomCoord[1]-topCoord[1]};
+        int ySpread;
+        Log.d(DEBUG_TAG, screenSpace[0] + " " + screenSpace[1]);
+        if(learningList.size() >= 10) {
+            ySpread = screenSpace[1]/6;
+        } else {
+            if(learningList.size() % 2 == 0) {
+                //even number of buttons learned per day
+                ySpread = (screenSpace[1]/((learningList.size()/2)+1));
+            } else {
+                //odd number
+                ySpread = (screenSpace[1]/((learningList.size()/2)+2));
+            }
+        }
+        Log.d(DEBUG_TAG, Integer.toString(ySpread));
+        //max will be ten buttons on the screen, half on one side and half on the other
+        //therefore we split the total buttons
+        int topMarginSpread = ySpread;
+        int topMarginSpreadHalf = topMarginSpread/2;
+        for(int i = 0; i < learningList.size(); i++){
+            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) buttonList.get(i).getLayoutParams();
+            params.topMargin = ySpread;
+            buttonList.get(i).setVisibility(View.VISIBLE);
+            buttonList.get(i).setText(learningList.get(i).getKorean());
+            //set this index value to the card so it the button position can be referenced easily later
+            learningList.get(i).setButtonIndex(i);
+            buttonList.get(i).setLayoutParams(params);
+//            buttonList.get(i).setY(ySpread);
+//            ySpread+=ySpread;
+            if((learningList.size() % 2) == 0) {
+                if ((i % 2) == 1) {
+                    ySpread += topMarginSpread;
+                }
+            } else {
+                ySpread+= topMarginSpreadHalf;
+            }
+        }
+    }
+
+    //TODO function called at the start to speak
+
     public double calEasinessFactor(double oldEasyFactor, double quality) {
         return oldEasyFactor-(0.8+(0.28*quality)-(0.02*quality*quality));
     }
@@ -295,7 +374,7 @@ public class StudyActivity extends Activity {
                 //learning stage
                 //increase streak
                 cell.setSessionStreak(cell.getSessionStreak()+1);
-                if(cell.getSessionStreak()>=3) { //was 4
+                if(cell.getSessionStreak()>=7) { //was 4
                     //learning stage over
                     //move cell only if available new word to replace this word
 
@@ -363,6 +442,39 @@ public class StudyActivity extends Activity {
             //it's fine if it goes negative
         }
     }
+
+    public void updateDisplay(boolean result, Cell c) {
+        //TODO where are other words added?
+        //0-2 korean
+        //3-4 audio
+        //5-6 english
+        if(result) {
+            switch(c.getSessionStreak()) {
+                case 3:
+                    //set to audio
+                    buttonList.get(c.getButtonIndex()).setText("{ADD_NOTE_SYMBOL}");
+                    break;
+                case 5:
+                    //swap to english
+                    buttonList.get(c.getButtonIndex()).setText(c.getEnglish());
+                    break;
+                case 7:
+                    //remove here instead?
+                }
+        }else {
+            switch(c.getSessionStreak()) {
+                case 2:
+                    //korean
+                    buttonList.get(c.getButtonIndex()).setText(c.getKorean());
+                    break;
+                case 4:
+                    //audio
+                    buttonList.get(c.getButtonIndex()).setText("{ADD_NOTE_SYMBOL}");
+                    break;
+            }
+        }
+    }
+
     public Cell nextCard(Cell cell) {
         Cell returnCell;
         switch(cell.getListID()) {
@@ -499,6 +611,10 @@ public class StudyActivity extends Activity {
         //do I return a retrieval or cardGap one? I think cardGap
         //newlist
 
+    }
+    @Override
+    public void onWindowFocusChanged (boolean hasFocus) {
+        createDisplayDeck();
     }
     @Override
     public void onDestroy() {

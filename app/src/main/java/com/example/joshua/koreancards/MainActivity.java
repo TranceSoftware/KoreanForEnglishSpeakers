@@ -265,8 +265,8 @@ public class MainActivity extends Activity {
         eFactorStringSplit = sharedPrefs.getString(E_FACTOR_KEY, "").split(",");
         //convert the data to doubles
         for(int i = 0; i < dueDataStringSplit.length; i++) {
-                dueDates[i]=Long.parseLong(dueDataStringSplit[i]);
-                eFactors[i]=Double.parseDouble(eFactorStringSplit[i]);
+            dueDates[i]=Long.parseLong(dueDataStringSplit[i]);
+            eFactors[i]=Double.parseDouble(eFactorStringSplit[i]);
         }
     }
 
@@ -294,7 +294,8 @@ public class MainActivity extends Activity {
         int tempIndex;
         //load the specified new cards per day minus cards already read
         //todo what about when a review card fails and becomes a study card? nothing atm it will be given the proper date and will become a review again if forced reset
-        for(tempIndex = index; tempIndex < (index + (cardsPerDay - cardsRead)); tempIndex++) {
+        //for(tempIndex = index; tempIndex < (index + (cardsPerDay - cardsRead)); tempIndex++) {
+        for(tempIndex = index; tempIndex < (index + (cardsPerDay)); tempIndex++) {
             studyList.add(new Cell(tempIndex, koreanTable.get(tempIndex), englishTable.get(tempIndex)));
             Log.d(DEBUG_TAG, "Index: " + tempIndex + "\t" +koreanTable.get(tempIndex));
         }
@@ -325,7 +326,7 @@ public class MainActivity extends Activity {
         editor.putInt(CARDS_PER_DAY_KEY, cardsPerDay);
         studyStarted = false;
         editor.putBoolean(STUDY_STARTED_KEY, studyStarted);
-        editor.commit();
+        editor.apply();
         Log.d(DEBUG_TAG, "Study session finished. Everything committed.");
     }
     public void postProcessingData(ArrayList<Cell> finishedData) {
@@ -382,7 +383,7 @@ public class MainActivity extends Activity {
             editor.putInt(INDEX_KEY, index);
             editor.putString(DUE_DATE_KEY, dueDataString);
             editor.putString(E_FACTOR_KEY, eFactorString);
-            editor.commit();
+            editor.apply();
         } else {
             //sharedPrefs.getLong(NEW_DAY_MILLI_KEY, newDayMilli);
             newDayMilli = sharedPrefs.getLong(NEW_DAY_MILLI_KEY, newDayMilli);
@@ -401,7 +402,7 @@ public class MainActivity extends Activity {
             editor.putBoolean(STUDY_STARTED_KEY, studyStarted);
             editor.putInt(CARDS_READ_KEY, cardsRead);
             editor.putLong(NEW_DAY_MILLI_KEY, newDayMilli);
-            editor.commit();
+            editor.apply();
         }
 
 //        if(System.currentTimeMillis() >  (newDayMilli + 86400000L))  {

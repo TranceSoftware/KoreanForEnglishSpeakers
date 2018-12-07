@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -31,26 +32,20 @@ public class StudyActivity extends Activity {
     private Calendar calendar = Calendar.getInstance(); //set this every time the activity is created or resumed
 
     private final String DEBUG_TAG = "DEBUG_TAG";
-
     private ArrayList<String> koreanWords = new ArrayList<>();
     private ArrayList<String> englishWords = new ArrayList<>();
-
     private ArrayList<Cell> newWordsList = new ArrayList<>();//new word list
     private ArrayList<Cell> learningList = new ArrayList<>();//learning set
     private ArrayList<Cell> retrievalList = new ArrayList<>();//retrieval set
     private ArrayList<Cell> finishedList = new ArrayList<>();//finished set
-
     private ArrayList<Cell> everyList = new ArrayList<>();
-
     private ArrayList<Cell> reviewWordsList = new ArrayList<>(); //words from previous sessions that need to be retrieved by the user
-
     private Cell currentCell = null;
-
     private int index = 0;
     private ArrayList<Button> buttonList = new ArrayList<>();
     private Button koreanWordButton, showAnswerButton, wrongAnswerButton, correctAnswerButton, timerButton;
     private Button item0, item1, item2, item3, item4, item5, item6, item7, item8, item9;
-
+    private LocalBroadcastManager localBroadcastManager;
     private Resources resources;
     //TODO API catch
     private SoundPool soundPool;
@@ -61,6 +56,7 @@ public class StudyActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.study_layout);
+        localBroadcastManager = LocalBroadcastManager.getInstance(this);
         calendar.setTimeInMillis(System.currentTimeMillis());
 //        koreanWords.addAll(getIntent().getStringArrayListExtra("KOREAN"));
 //        englishWords.addAll(getIntent().getStringArrayListExtra("ENGLISH"));
@@ -74,26 +70,26 @@ public class StudyActivity extends Activity {
         wrongAnswerButton = findViewById(R.id.WrongAnswerButton);
         correctAnswerButton = findViewById(R.id.CorrectAnswerButton);
         timerButton = findViewById(R.id.TimerButton);
-        item0 = findViewById(R.id.Item0);
-        item1 = findViewById(R.id.Item1);
-        item2 = findViewById(R.id.Item2);
-        item3 = findViewById(R.id.Item3);
-        item4 = findViewById(R.id.Item4);
-        item5 = findViewById(R.id.Item5);
-        item6 = findViewById(R.id.Item6);
-        item7 = findViewById(R.id.Item7);
-        item8 = findViewById(R.id.Item8);
-        item9 = findViewById(R.id.Item9);
-        buttonList.add(item0);
-        buttonList.add(item1);
-        buttonList.add(item2);
-        buttonList.add(item3);
-        buttonList.add(item4);
-        buttonList.add(item5);
-        buttonList.add(item6);
-        buttonList.add(item7);
-        buttonList.add(item8);
-        buttonList.add(item8);
+//        item0 = findViewById(R.id.Item0);
+//        item1 = findViewById(R.id.Item1);
+//        item2 = findViewById(R.id.Item2);
+//        item3 = findViewById(R.id.Item3);
+//        item4 = findViewById(R.id.Item4);
+//        item5 = findViewById(R.id.Item5);
+//        item6 = findViewById(R.id.Item6);
+//        item7 = findViewById(R.id.Item7);
+//        item8 = findViewById(R.id.Item8);
+//        item9 = findViewById(R.id.Item9);
+//        buttonList.add(item0);
+//        buttonList.add(item1);
+//        buttonList.add(item2);
+//        buttonList.add(item3);
+//        buttonList.add(item4);
+//        buttonList.add(item5);
+//        buttonList.add(item6);
+//        buttonList.add(item7);
+//        buttonList.add(item8);
+//        buttonList.add(item8);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             soundPool = new SoundPool.Builder().setMaxStreams(10).build();
@@ -682,6 +678,7 @@ public class StudyActivity extends Activity {
 //                finish();
 //            }
                 if (newWordsList.size() == 0 && learningList.size() == 0 && retrievalList.size() == 0) {
+//                    finishSession();
                     finish();
                 }
             }
@@ -721,7 +718,7 @@ public class StudyActivity extends Activity {
     }
     @Override
     public void onPause() {
-        finishSession();
+        finishSession(false);
         super.onPause();
     }
 //    @Override
@@ -882,7 +879,7 @@ public class StudyActivity extends Activity {
                         }
                     }
                     if (finished) {
-                        finishSession(); //this should call onDestroy
+                        finishSession(finished); //this should call onDestroy
                         finish();
                     }
                 }
@@ -909,7 +906,7 @@ public class StudyActivity extends Activity {
         }
     }
 
-    public void finishSession() {
+    public void finishSession(boolean finished) {
         Log.d(DEBUG_TAG, "StudyActivity calling finishedSession");
         for(Cell c : everyList) {
             // Log.d(DEBUG_TAG, "StudyActivity calling finishedSession" +c.getKorean() + Integer.toString(c.getListID()));
@@ -924,7 +921,12 @@ public class StudyActivity extends Activity {
         Bundle bundle = new Bundle();
         bundle.putSerializable("STUDY_WORDS", everyList);
         resultIntent.putExtras(bundle);
-        setResult(Activity.RESULT_OK, resultIntent);
+        if(finished) {
+            setResult(Activity.RESULT_OK, resultIntent);
+        } else {
+            Log.d(DEBUG_TAG, "LocalBroadcast sending.");
+            localBroadcastManager.sendBroadcast(resultIntent);
+        }
     }
 }
 

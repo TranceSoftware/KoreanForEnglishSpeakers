@@ -16,21 +16,21 @@ import java.io.FilterReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomAdapter extends ArrayAdapter<Cell> implements Filterable {
+public class CustomAdapter extends ArrayAdapter<CardTable> implements Filterable {
 
     private final String DEBUG_TAG = "DEBUG_TAG";
     private int resourceLayout;
     private Context context;
-    private ArrayList<Cell> items;
-    private ArrayList<Cell> oldItems;
+    private ArrayList<CardTable> items;
+    private ArrayList<CardTable> oldItems;
 
 
-    public CustomAdapter(Context context, int resourceLayout, ArrayList<Cell> items) {
+    public CustomAdapter(Context context, int resourceLayout, ArrayList<CardTable> items) {
         super(context, resourceLayout, items);
         this.items = items;
         this.resourceLayout = resourceLayout;
         this.context = context;
-        this.oldItems = (ArrayList<Cell>)items.clone();
+        this.oldItems = (ArrayList<CardTable>)items.clone();
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -41,21 +41,21 @@ public class CustomAdapter extends ArrayAdapter<Cell> implements Filterable {
             vi = LayoutInflater.from(context);
             view = vi.inflate(resourceLayout, null);
         }
-        Cell cell = getItem(position);
+        CardTable cardTable = getItem(position);
 
-        if (cell != null) {
+        if (cardTable != null) {
             TextView foreignWord = (TextView) view.findViewById(R.id.foreignText);
             TextView nativeWord = (TextView) view.findViewById(R.id.nativeText);
             TextView eFactor = (TextView) view.findViewById(R.id.eFactorText);
 
             if (foreignWord != null) {
-                foreignWord.setText(cell.getKorean());
+                foreignWord.setText(cardTable.getForeignWord());
             }
             if (nativeWord != null) {
-                nativeWord.setText(cell.getEnglish());
+                nativeWord.setText(cardTable.getNativeWord());
             }
             if (eFactor != null) {
-                eFactor.setText(Double.toString(cell.getDifficulty()));
+                eFactor.setText(Double.toString(cardTable.getFactor()));
             }
         }
         return view;
@@ -69,7 +69,7 @@ public class CustomAdapter extends ArrayAdapter<Cell> implements Filterable {
             protected void publishResults(CharSequence constraint, FilterResults results) {
                 Log.d(DEBUG_TAG, "PublishResults called.");
                 items.clear();
-                for(Cell c : (ArrayList<Cell>) results.values) {
+                for(CardTable c : (ArrayList<CardTable>) results.values) {
                     items.add(c);
                 }
                 notifyDataSetChanged();
@@ -78,7 +78,7 @@ public class CustomAdapter extends ArrayAdapter<Cell> implements Filterable {
             protected FilterResults performFiltering(CharSequence constraint) {
                 Log.d(DEBUG_TAG, "performFiltering called: " + constraint.toString() + "\toldItem size: " + Integer.toString(oldItems.size()));
                 FilterResults results = new FilterResults();
-                ArrayList<Cell> FilteredArrayNames = new ArrayList<>();
+                ArrayList<CardTable> FilteredArrayNames = new ArrayList<>();
 
 //                items = oldItems;
 
@@ -88,7 +88,7 @@ public class CustomAdapter extends ArrayAdapter<Cell> implements Filterable {
                 Log.d(DEBUG_TAG, "Constraint String value: " + tempString);
                 for(int i =1; i < oldItems.size(); i++) {
 //                    Log.d(DEBUG_TAG, oldItems.get(i).getEnglish().toLowerCase());
-                    if(oldItems.get(i).getEnglish().toLowerCase().contains(tempString)) {
+                    if(oldItems.get(i).getNativeWord().toLowerCase().contains(tempString)) {
                         FilteredArrayNames.add(oldItems.get(i));
 //                        Log.d(DEBUG_TAG, oldItems.get(i).getEnglish() + " added.");
                         counter+=1;

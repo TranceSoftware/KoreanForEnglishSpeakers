@@ -81,8 +81,10 @@ public class Cell implements Serializable {
         this.oldCellIndex = oldIndex;
     }
 
-    public Cell(int index, String korean, String english) {
+    public Cell(int index, double factor, long time, int days, String korean, String english) {
         this.index = index;
+        this.milliSeconds = time;
+        this.daysBetweenReviews = days;
         this.korean = korean;
         this.english = english;
     }

@@ -433,11 +433,11 @@ public class TestActivity extends Activity {
         Log.d(DEBUG_TAG, "Loading new cards.");
         for (int i = 0; i < dueDates.length; i++) {
             if ((dueDates[i] != 0L) && (currentTime > dueDates[i])) {
-                Cell tempCell = new Cell(i, koreanTable.get(i), englishTable.get(i));
-                tempCell.setDueDate(dueDates[i]);
-                Log.d(DEBUG_TAG, tempCell.getKorean() + " MilliTime: " + Long.toString(newDayMilli) + " Difference: " + Long.toString(currentTime - tempCell.getDueDate()));
-                tempCell.setReviewCard(1);
-                studyList.add(tempCell);
+//                Cell tempCell = new Cell(i, koreanTable.get(i), englishTable.get(i));
+//                tempCell.setDueDate(dueDates[i]);
+//                Log.d(DEBUG_TAG, tempCell.getKorean() + " MilliTime: " + Long.toString(newDayMilli) + " Difference: " + Long.toString(currentTime - tempCell.getDueDate()));
+//                tempCell.setReviewCard(1);
+//                studyList.add(tempCell);
             }
         }
         //get new cards due
@@ -455,14 +455,14 @@ public class TestActivity extends Activity {
             Log.d(DEBUG_TAG, "Loading cards.");
             for (tempIndex = index; tempIndex < (index + (cardsPerDay)); tempIndex++) {
                 dueDates[tempIndex] = 1L;
-                studyList.add(new Cell(tempIndex, koreanTable.get(tempIndex), englishTable.get(tempIndex)));
+//                studyList.add(new Cell(tempIndex, koreanTable.get(tempIndex), englishTable.get(tempIndex)));
                 Log.d(DEBUG_TAG, "Index: " + tempIndex + "\t" + koreanTable.get(tempIndex));
             }
         } else {
             Log.d(DEBUG_TAG, "Reloading cards.");
             for(int i = 0; i < dueDates.length; i++) {
                 if(dueDates[i]==1L) {
-                    studyList.add(new Cell(tempIndex, koreanTable.get(tempIndex), englishTable.get(tempIndex)));
+//                    studyList.add(new Cell(tempIndex, koreanTable.get(tempIndex), englishTable.get(tempIndex)));
                     Log.d(DEBUG_TAG, "Index: " + tempIndex + "\t" + koreanTable.get(tempIndex));
                 }
             }

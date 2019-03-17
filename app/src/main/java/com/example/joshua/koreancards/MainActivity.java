@@ -834,7 +834,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         //int rawId = resources.getIdentifier(rawIdentifier, "raw", this.getPackageName());
         int rawId = getResources().getIdentifier(rawIdentifier, null, this.getPackageName());
         //int soundId = soundPool.load(this, R.raw.k0, 1);
-        int soundId = soundPool.load(this, rawId, 1);
+        int soundId = soundPool.load(this, R.raw.a, 1);
         //soundPool.play(soundId, 1, 1, 1, 0, 1);
         //soundPool.release();
         //soundPool = null;
@@ -886,14 +886,15 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 //        }
 //    }
         if(tempCard.getStreak()<4) {
-            //playSound(currentCell.getRawIdentifier());
-            updatedPlaySound(tempCard.getForeignWord());
+            playSound(Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
+//            updatedPlaySound(tempCard.getForeignWord());
         }
         if(tempCard.getStreak() <= 3) {
             koreanWordButton.setText(tempCard.getForeignWord());
         } else if(tempCard.getStreak()==4 || studyReviewMode==true) {
             koreanWordButton.setText("♫");
-            updatedPlaySound(tempCard.getForeignWord());
+//            updatedPlaySound(tempCard.getForeignWord());
+            playSound(Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
         } else {
             koreanWordButton.setText(tempCard.getNativeWord());
         }
@@ -1210,7 +1211,8 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
     public void setupDatabase() {
         BufferedReader bufferedReader = null;
         try {
-            bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open("WordPairs.txt"), "UTF-8"));
+//            bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open("WordPairs.txt"), "UTF-8"));
+            bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open("1_500_translated.txt"), "UTF-8"));
 
             String tempLine;
             String[] splitTempLine;

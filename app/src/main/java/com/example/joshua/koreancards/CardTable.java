@@ -80,4 +80,8 @@ public class CardTable {
     public void setDays(int days) {
         this.days = days;
     }
+
+    public CardTable createCopy() {
+        return new CardTable(this.indexKey, this.nativeWord, this.foreignWord, this.factor, this.time, this.days, this.streak);
+    }
 }

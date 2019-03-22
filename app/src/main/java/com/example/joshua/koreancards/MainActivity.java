@@ -48,6 +48,7 @@ import java.util.Calendar;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
+import java.util.Stack;
 import java.util.TimeZone;
 
 public class MainActivity extends Activity implements TimePickerDialog.OnTimeSetListener {
@@ -108,7 +109,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
     private Calendar calendar = Calendar.getInstance();
     private ArrayList<Cell> everyList = new ArrayList<>();
     private Cell currentCell = null;
-    private Button koreanWordButton, showAnswerButton, wrongAnswerButton, correctAnswerButton, timerButton;
+    private Button koreanWordButton, showAnswerButton, wrongAnswerButton, correctAnswerButton, timerButton, undoButton;
     private LocalBroadcastManager localBroadcastManager;
     //TODO api catch
     private Resources resources;
@@ -131,6 +132,14 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 
     private TextToSpeech englishTextToSpeech;
     private TextToSpeech koreanTextToSpeech;
+
+    private Stack<CardTable> tempCardHistory = new Stack<>();
+    private Stack<ArrayList<CardTable>> newCardHistory = new Stack<>();
+    private Stack<ArrayList<CardTable>> reviewCardHistory = new Stack<>();
+
+    private ArrayList<CardTable> initialReviewList = new ArrayList<>();
+    private ArrayList<CardTable> initialNewCardList = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -267,6 +276,14 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 //                    Log.d(DEBUG_TAG, "BundleList size: " + bundleList.size());
                     changeLayout(1);
                 }
+                //todo check if anything changes between getting cards from database and here
+                for(CardTable cT: newCards) {
+                    initialNewCardList.add(cT.createCopy());
+                }
+                for(CardTable cT: reviewCardList) {
+                    initialReviewList.add(cT.createCopy());
+                }
+                //todo why check?
                 checkDatabase();
 //                checkTime();
 //                Log.d(DEBUG_TAG, "StudyStarted: " + Boolean.toString(studyStarted));
@@ -337,7 +354,8 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         studyList.add(correctAnswerButton);
         timerButton = findViewById(R.id.TimerButton);
         studyList.add(timerButton);
-
+        undoButton = findViewById(R.id.UndoButton);
+        studyList.add(undoButton);
         timerText = findViewById(R.id.TimerText);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -404,12 +422,17 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 
                 updatedCardAnswer(false);
                 checkDeckStatus();
+                int i = 0;
                 for(CardTable cT : newCards) {
-                    Log.d(DEBUG_TAG, cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                    Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                    i+=1;
                 }
+                int j = 0;
                 for(CardTable cT : reviewCardList) {
-                    Log.d(DEBUG_TAG, cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                    Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                    j+=1;
                 }
+                Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
                 Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCards.size()));
                 Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardList.size()));
                 Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
@@ -420,6 +443,28 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                 }
 
 
+            }
+        });
+        undoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                undoButtonPressed();
+                int i = 0;
+                for(CardTable cT : newCards) {
+                    Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                    i+=1;
+                }
+                int j = 0;
+                for(CardTable cT : reviewCardList) {
+                    Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                    j+=1;
+                }
+                Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
+                Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCardHistory.size()));
+                Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardHistory.size()));
+                Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
+                nextRound();
+                //check status of deck?
             }
         });
         correctAnswerButton.setOnClickListener(new View.OnClickListener() {
@@ -459,12 +504,17 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 //                    Log.d(DEBUG_TAG, i + "\t" + finishedList.get(i).getKorean() + "\t" + Integer.toString(finishedList.get(i).getCardsBetween()) + "\t" + finishedList.get(i).getRetrievalStreak() + "\t" + (finishedList.get(i).getMilliSeconds() - System.currentTimeMillis()));
 //                }
 //                nextRound();
+                int i = 0;
                 for(CardTable cT : newCards) {
-                    Log.d(DEBUG_TAG, cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                    Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                    i+=1;
                 }
+                int j = 0;
                 for(CardTable cT : reviewCardList) {
-                    Log.d(DEBUG_TAG, cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                    Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                    j+=1;
                 }
+                Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
                 Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCards.size()));
                 Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardList.size()));
                 Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
@@ -1313,8 +1363,61 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         editor.putInt(INDEX_KEY, index);
         editor.apply();
     }
+    public void undoButtonPressed() {
+        if(!tempCardHistory.empty()) {
+            tempCard = tempCardHistory.pop();
+            //was the card removed at this point?
+            boolean tempFound = false;
+            for(CardTable cT : newCards) {
+                if(tempCard.getIndexKey() == cT.getIndexKey()) {
+                    tempFound = true;
+                }
+            }
+            for(CardTable cT : reviewCardList) {
+                if(tempCard.getIndexKey() == cT.getIndexKey()) {
+                    tempFound = true;
+                }
+            }
+
+            if(!tempFound) {
+                //card missing, need to undo the write with the copy
+                for(CardTable cT : initialNewCardList) {
+                    if(cT.getIndexKey() == tempCard.getIndexKey()) {
+                        MainActivity.cardDatabase.cardDao().updateCard(cT);
+                    }
+                }
+                for(CardTable cT : initialReviewList) {
+                    if(cT.getIndexKey() == tempCard.getIndexKey()) {
+                        MainActivity.cardDatabase.cardDao().updateCard(cT);
+                    }
+                }
+            }
+
+            newCards = newCardHistory.pop();
+            reviewCardList = reviewCardHistory.pop();
+            //if in study mode check put back in newcards
+            //check to see if anything changes at the time of assignment or if tempcard can just change
+        }
+
+    }
     public void updatedCardAnswer(boolean result) {
         //only method to change the card data
+
+
+
+        tempCardHistory.push(tempCard.createCopy());
+        ArrayList<CardTable> newCardsCopy = new ArrayList<>();
+        for(CardTable cT: newCards) {
+            newCardsCopy.add(cT.createCopy());
+        }
+        newCardHistory.push(newCardsCopy);
+        ArrayList<CardTable> reviewCardListCopy = new ArrayList<>();
+        for(CardTable cT: reviewCardList) {
+            reviewCardListCopy.add(cT.createCopy());
+        }
+        reviewCardHistory.push(reviewCardListCopy);
+        //todo move this to the end, maybe?
+
         if(result) {
             //correct answer
             Log.d(DEBUG_TAG, "Time value: " + Long.toString(tempCard.getTime()));

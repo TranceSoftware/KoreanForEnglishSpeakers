@@ -26,4 +26,7 @@ public interface CardDao {
 
     @Query("SELECT * FROM cards WHERE time = 0")
     List<CardTable> getReviewCards();
+
+    @Query("SELECT * FROM cards WHERE time != :l")
+    List<CardTable> getModifiedCards(Long l); //must be handed Long.MAX_VALUE to work properly
 }

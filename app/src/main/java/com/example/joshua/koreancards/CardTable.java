@@ -4,8 +4,10 @@ package com.example.joshua.koreancards;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
+import java.io.Serializable;
+
 @Entity(tableName = "cards")
-public class CardTable {
+public class CardTable implements Serializable {
     @PrimaryKey
     private int indexKey;
     private String nativeWord;

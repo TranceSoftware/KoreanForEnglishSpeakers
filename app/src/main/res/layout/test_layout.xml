@@ -26,6 +26,7 @@
         android:layout_marginTop="20dp"
         android:text="Data"
         android:textSize="35dp"
+        android:visibility="visible"
         app:layout_constraintStart_toStartOf="@+id/StudyButton"
         app:layout_constraintTop_toBottomOf="@+id/StudyButton" />
 
@@ -36,6 +37,7 @@
         android:layout_marginTop="20dp"
         android:text="Dictionary"
         android:textSize="35dp"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/DataButton" />
@@ -49,6 +51,7 @@
         android:layout_marginTop="20dp"
         android:text="Settings"
         android:textSize="35dp"
+        android:visibility="visible"
         app:layout_constraintStart_toStartOf="@+id/DictionaryButton"
         app:layout_constraintTop_toBottomOf="@+id/DictionaryButton" />
 
@@ -145,6 +148,11 @@
         app:layout_constraintEnd_toStartOf="@+id/searchButton"
         app:layout_constraintStart_toStartOf="@+id/searchButton"
         app:layout_constraintTop_toBottomOf="@+id/searchButton"></ListView>
+    <ListView
+        android:id="@+id/loadFileListView"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"></ListView>
 
     <Button
         android:id="@+id/pick_time"
@@ -216,5 +224,33 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/WrongAnswerButton"
         app:layout_constraintStart_toEndOf="@+id/CorrectAnswerButton" />
+
+    <Button
+        android:id="@+id/LoadButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="300dp"
+        android:text="Save"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/SaveButton"
+        app:layout_constraintHorizontal_bias="0.387"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/SaveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="64dp"
+        android:layout_marginRight="64dp"
+        android:layout_marginBottom="300dp"
+        android:text="Load"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

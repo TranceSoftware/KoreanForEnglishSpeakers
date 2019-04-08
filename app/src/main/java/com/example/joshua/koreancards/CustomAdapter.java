@@ -46,7 +46,7 @@ public class CustomAdapter extends ArrayAdapter<CardTable> implements Filterable
         if (cardTable != null) {
             TextView foreignWord = (TextView) view.findViewById(R.id.foreignText);
             TextView nativeWord = (TextView) view.findViewById(R.id.nativeText);
-            TextView eFactor = (TextView) view.findViewById(R.id.eFactorText);
+//            TextView eFactor = (TextView) view.findViewById(R.id.eFactorText);
 
             if (foreignWord != null) {
                 foreignWord.setText(cardTable.getForeignWord());
@@ -54,9 +54,9 @@ public class CustomAdapter extends ArrayAdapter<CardTable> implements Filterable
             if (nativeWord != null) {
                 nativeWord.setText(cardTable.getNativeWord());
             }
-            if (eFactor != null) {
-                eFactor.setText(Double.toString(cardTable.getFactor()));
-            }
+//            if (eFactor != null) {
+//                eFactor.setText(Double.toString(cardTable.getFactor()));
+//            }
         }
         return view;
     }

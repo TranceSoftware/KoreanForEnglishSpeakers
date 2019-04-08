@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.TimePickerDialog;
 import android.arch.persistence.room.Room;
 import android.content.BroadcastReceiver;
@@ -22,8 +24,9 @@ import android.os.CountDownTimer;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Editable;
@@ -31,18 +34,14 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
-//import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,12 +53,9 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.nio.Buffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 import java.util.TimeZone;
@@ -147,284 +143,77 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
     private ArrayList<CardTable> initialReviewList = new ArrayList<>();
     private ArrayList<CardTable> initialNewCardList = new ArrayList<>();
 
+    private int viewID = -1;
+
+    private NotificationManagerCompat notificationManagerCompat;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.test_layout);
 
-        allCardList = new ArrayList<>();
-        newCards = new ArrayList<>();
-        reviewCardList = new ArrayList<>();
+        if(viewID == -1) {
+            super.onCreate(savedInstanceState);
 
-        cardDatabase = Room.databaseBuilder(getApplicationContext(), CardDatabase.class, "carddb").allowMainThreadQueries().build();
-        englishTextToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if(status != TextToSpeech.ERROR) {
-                    englishTextToSpeech.setLanguage(Locale.ENGLISH);
+            notificationManagerCompat = NotificationManagerCompat.from(this);
+
+            setContentView(R.layout.test_layout);
+
+            allCardList = new ArrayList<>();
+            newCards = new ArrayList<>();
+            reviewCardList = new ArrayList<>();
+
+            cardDatabase = Room.databaseBuilder(getApplicationContext(), CardDatabase.class, "carddb").allowMainThreadQueries().build();
+            englishTextToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+                @Override
+                public void onInit(int status) {
+                    if (status != TextToSpeech.ERROR) {
+                        englishTextToSpeech.setLanguage(Locale.ENGLISH);
+                    }
                 }
-            }
-        });
-        koreanTextToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if(status != TextToSpeech.ERROR) {
-                    koreanTextToSpeech.setLanguage(Locale.KOREAN);
+            });
+            koreanTextToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+                @Override
+                public void onInit(int status) {
+                    if (status != TextToSpeech.ERROR) {
+                        koreanTextToSpeech.setLanguage(Locale.KOREAN);
+                    }
                 }
+            });
+
+            sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            editor = sharedPrefs.edit();
+            initialTasks();
+            createKoreanTable(KOREAN_TABLE_NAME);
+            createEnglishTable(ENGLISH_TABLE_NAME);
+            /*
+             *
+             * END OF ON CREATE FOR MAIN ACTIVITY
+             *
+             */
+            calendar.setTimeInMillis(System.currentTimeMillis());
+            resources = this.getResources();
+
+            //TODO custom layout with all buttons
+            //TODO move some of the below onCreate() to a new function which plays which this view loads
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                soundPool = new SoundPool.Builder().setMaxStreams(1).build();
+            } else {
+                soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 1);
             }
-        });
-
-        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        editor = sharedPrefs.edit();
-        initialTasks();
-
-
-        dictionaryListView = (ListView)findViewById(R.id.dictionaryListView);
-        loadFileListView = findViewById(R.id.loadFileListView);
-        searchText = (EditText)findViewById(R.id.searchButton);
-        //todo make this a method
-        dictionaryList = new ArrayList<>();
-        Log.d(DEBUG_TAG, "DictionaryList: " + Integer.toString(dictionaryList.size()));
-        customAdapter = new CustomAdapter(this, R.layout.customlayout, allCardList);
-        dictionaryListView.setAdapter(customAdapter);
-        searchText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                String searchString = editable.toString().trim().toLowerCase();
-                MainActivity.this.customAdapter.getFilter().filter(searchString);
-            }
-        });
-        studyButton=findViewById(R.id.StudyButton);
-        mainList.add(studyButton);
-        dataButton=findViewById(R.id.DataButton);
-        mainList.add(dataButton);
-        dictionaryButton=findViewById(R.id.DictionaryButton);
-        mainList.add(dictionaryButton);
-        settingsButton=findViewById(R.id.SettingsButton);
-        mainList.add(settingsButton);
-        studyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //todo change canStudy to something useful later, for now keep as true
-                if(newCards.size()>0 || reviewCardList.size()>0) {
-                    Log.d(DEBUG_TAG, "ReviewList size: " + Integer.toString(reviewCardList.size()));
-//                    Log.d(DEBUG_TAG, "BundleList size: " + bundleList.size());
-                    changeLayout(1);
+            soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+                @Override
+                public void onLoadComplete(SoundPool soundPool, int sampleId, int soundStatus) {
+                    soundPool.play(sampleId, 1.0f, 1.0f, 0, 0, 1.0f);
                 }
-                //todo check if anything changes between getting cards from database and here
-                for(CardTable cT: newCards) {
-                    initialNewCardList.add(cT.createCopy());
-                }
-                for(CardTable cT: reviewCardList) {
-                    initialReviewList.add(cT.createCopy());
-                }
-                //todo why check?
-                checkDatabase();
-            }
-        });
-        dataButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Intent intent = new Intent(MainActivity.this, DataActivity.class);
-                //MainActivity.this.startActivity(intent);
-            }
-        });
-        dictionaryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                changeLayout(2);
-            }
-        });
-        settingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                changeLayout(3);
-            }
-        });
-        createKoreanTable(KOREAN_TABLE_NAME);
-        createEnglishTable(ENGLISH_TABLE_NAME);
-        /*
-         *
-         * END OF ON CREATE FOR MAIN ACTIVITY
-         *
-         */
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        resources = this.getResources();
-
-        //TODO custom layout with all buttons
-        //TODO move some of the below onCreat() to a new function which plays which this view loads
-        koreanWordButton = findViewById(R.id.KoreanWordButton);
-        studyList.add(koreanWordButton);
-        showAnswerButton = findViewById(R.id.ShowAnswerButton);
-        studyList.add(showAnswerButton);
-        wrongAnswerButton = findViewById(R.id.WrongAnswerButton);
-        studyList.add(wrongAnswerButton);
-        correctAnswerButton = findViewById(R.id.CorrectAnswerButton);
-        studyList.add(correctAnswerButton);
-        timerButton = findViewById(R.id.TimerButton);
-        studyList.add(timerButton);
-        undoButton = findViewById(R.id.UndoButton);
-        studyList.add(undoButton);
-        timerText = findViewById(R.id.TimerText);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            soundPool = new SoundPool.Builder().setMaxStreams(1).build();
+            });
+            updatedChangeLayout(0);
         } else {
-            soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 1);
+            updatedChangeLayout(viewID);
         }
-        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
-            @Override
-            public void onLoadComplete(SoundPool soundPool, int sampleId, int soundStatus) {
-                soundPool.play(sampleId, 1.0f, 1.0f, 0, 0, 1.0f);
-            }
-        });
-
-        koreanWordButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //todo play audio later
-            }
-        });
-        showAnswerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(tempCard.getStreak() <= 3) {
-                    showAnswerButton.setText(tempCard.getNativeWord());
-                } else if(tempCard.getStreak()==4 || studyReviewMode==true) {
-                    showAnswerButton.setText(tempCard.getNativeWord() + " - " + tempCard.getForeignWord());
-                } else {
-                    showAnswerButton.setText(tempCard.getForeignWord());
-                }
-            }
-        });
-        wrongAnswerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                updatedCardAnswer(false);
-                checkDeckStatus();
-                int i = 0;
-                for(CardTable cT : newCards) {
-                    Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
-                    i+=1;
-                }
-                int j = 0;
-                for(CardTable cT : reviewCardList) {
-                    Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
-                    j+=1;
-                }
-                Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
-                Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCards.size()));
-                Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardList.size()));
-                Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
-                if(newCards.size() > 0 || reviewCardList.size() > 0) { //todo this will change, most likely reviewcardList and boolean check
-                    tempCard = updatedNextCard();
-                    nextRound();
-                    showAnswerButton.setText("?");
-                }
-
-
-            }
-        });
-        undoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                undoButtonPressed();
-                int i = 0;
-                for(CardTable cT : newCards) {
-                    Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
-                    i+=1;
-                }
-                int j = 0;
-                for(CardTable cT : reviewCardList) {
-                    Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
-                    j+=1;
-                }
-                Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
-                Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCardHistory.size()));
-                Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardHistory.size()));
-                Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
-                nextRound();
-                //check status of deck?
-            }
-        });
-        correctAnswerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int i = 0;
-                for(CardTable cT : newCards) {
-                    Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
-                    i+=1;
-                }
-                int j = 0;
-                for(CardTable cT : reviewCardList) {
-                    Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
-                    j+=1;
-                }
-                Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
-                Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCards.size()));
-                Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardList.size()));
-                Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
-                updatedCardAnswer(true);
-                checkDeckStatus();
-                if(newCards.size() > 0 || reviewCardList.size()>0) {
-                    tempCard = updatedNextCard();
-                    nextRound();
-                    showAnswerButton.setText("?");
-                }
-            }
-        });
-        pickTime = (Button)findViewById(R.id.pick_time);
-        pickTime.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment timePicker = new TimePickerFragment();
-                timePicker.show(getFragmentManager(), "time picker");
-                //todo import vs v4
-            }
-        });
-        settingText = (TextView)findViewById(R.id.settingText);
-        cardsPerDayText = (EditText)findViewById(R.id.cardsPerDay);
-        cardsPerDayText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId==EditorInfo.IME_ACTION_DONE) {
-//                    Log.d(DEBUG_TAG, "New cardsPerDay: " + cardsPerDayText.toString().trim());
-                    cardsPerDay = Integer.parseInt(cardsPerDayText.getText().toString().trim());
-                    Log.d(DEBUG_TAG, "New cardsPerDay: " + Integer.toString(cardsPerDay));
-                    editor.putInt(CARDS_PER_DAY_KEY, cardsPerDay);
-                    return true;
-                }
-                return false;
-            }
-        });
-        loadButton = findViewById(R.id.LoadButton);
-        loadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                readDatabaseSave();
-            }
-        });
-        saveButton = findViewById(R.id.SaveButton);
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                writeDatabaseSave();
-            }
-        });
     }
     @Override
     public void onBackPressed() {
         //todo make this unique for each view. Study view the worst. For now change to originaly
-        changeLayout(0);
+        updatedChangeLayout(0);
     }
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -569,6 +358,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 
 
     //TODO function called at the start to speak
+
     public void playSound(String rawIdentifier) {
 
         Log.d(DEBUG_TAG, rawIdentifier);
@@ -625,6 +415,245 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             playSound(Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
         } else {
             koreanWordButton.setText(tempCard.getNativeWord());
+        }
+    }
+    public void updatedChangeLayout(int session) {
+        viewID = session;
+        if(session==0) {
+            //main screen
+            setContentView(R.layout.test_layout);
+            studyButton=findViewById(R.id.StudyButton);
+            dictionaryButton=findViewById(R.id.DictionaryButton);
+            settingsButton=findViewById(R.id.SettingsButton);
+            studyButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //todo change canStudy to something useful later, for now keep as true
+                    if (newCards.size() > 0 || reviewCardList.size() > 0) {
+                        Log.d(DEBUG_TAG, "ReviewList size: " + Integer.toString(reviewCardList.size()));
+//                    Log.d(DEBUG_TAG, "BundleList size: " + bundleList.size());
+                        updatedChangeLayout(1);
+                    }
+                    //todo check if anything changes between getting cards from database and here
+                    for (CardTable cT : newCards) {
+                        initialNewCardList.add(cT.createCopy());
+                    }
+                    for (CardTable cT : reviewCardList) {
+                        initialReviewList.add(cT.createCopy());
+                    }
+                    if(reviewCardList.size() >0) {
+                        tempCard = reviewCardList.get(0);
+                    } else {
+                        tempCard = newCards.get(0);
+                    }
+                    koreanWordButton.setText(tempCard.getForeignWord());
+                    //todo why check?
+                    checkDatabase();
+                }
+            });
+            dictionaryButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    updatedChangeLayout(2);
+                }
+            });
+            settingsButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    updatedChangeLayout(3);
+                }
+            });
+        } else if(session==1) {
+            //study screen
+            setContentView(R.layout.study_layout);
+            koreanWordButton = findViewById(R.id.KoreanWordButton);
+            showAnswerButton = findViewById(R.id.ShowAnswerButton);
+            wrongAnswerButton = findViewById(R.id.WrongAnswerButton);
+            correctAnswerButton = findViewById(R.id.CorrectAnswerButton);
+            timerButton = findViewById(R.id.TimerButton);
+            undoButton = findViewById(R.id.UndoButton);
+            timerText = findViewById(R.id.TimerText);
+            koreanWordButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //todo play audio later
+                }
+            });
+            showAnswerButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (tempCard.getStreak() <= 3) {
+                        showAnswerButton.setText(tempCard.getNativeWord());
+                    } else if (tempCard.getStreak() == 4 || studyReviewMode == true) {
+                        showAnswerButton.setText(tempCard.getNativeWord() + " - " + tempCard.getForeignWord());
+                    } else {
+                        showAnswerButton.setText(tempCard.getForeignWord());
+                    }
+                }
+            });
+            wrongAnswerButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    updatedCardAnswer(false);
+                    checkDeckStatus();
+                    int i = 0;
+                    for (CardTable cT : newCards) {
+                        Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                        i += 1;
+                    }
+                    int j = 0;
+                    for (CardTable cT : reviewCardList) {
+                        Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                        j += 1;
+                    }
+                    Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
+                    Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCards.size()));
+                    Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardList.size()));
+                    Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
+                    if (newCards.size() > 0 || reviewCardList.size() > 0) { //todo this will change, most likely reviewcardList and boolean check
+                        tempCard = updatedNextCard();
+                        nextRound();
+                        showAnswerButton.setText("?");
+                    }
+
+
+                }
+            });
+            undoButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    undoButtonPressed();
+                    int i = 0;
+                    for (CardTable cT : newCards) {
+                        Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                        i += 1;
+                    }
+                    int j = 0;
+                    for (CardTable cT : reviewCardList) {
+                        Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                        j += 1;
+                    }
+                    Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
+                    Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCardHistory.size()));
+                    Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardHistory.size()));
+                    Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
+                    nextRound();
+                    //check status of deck?
+                }
+            });
+            correctAnswerButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int i = 0;
+                    for (CardTable cT : newCards) {
+                        Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                        i += 1;
+                    }
+                    int j = 0;
+                    for (CardTable cT : reviewCardList) {
+                        Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
+                        j += 1;
+                    }
+                    Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
+                    Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCards.size()));
+                    Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardList.size()));
+                    Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
+                    updatedCardAnswer(true);
+                    checkDeckStatus();
+                    if (newCards.size() > 0 || reviewCardList.size() > 0) {
+                        tempCard = updatedNextCard();
+                        nextRound();
+                        showAnswerButton.setText("?");
+                    }
+                }
+            });
+        } else if(session==2) {
+            //dictionary screen
+            setContentView(R.layout.dictionary_layout);
+            dictionaryListView = (ListView)findViewById(R.id.dictionaryListView);
+//        loadFileListView = findViewById(R.id.loadFileListView);
+            searchText = (EditText)findViewById(R.id.searchButton);
+            //todo make this a method
+            dictionaryList = new ArrayList<>();
+            Log.d(DEBUG_TAG, "DictionaryList: " + Integer.toString(dictionaryList.size()));
+            customAdapter = new CustomAdapter(this, R.layout.customlayout, allCardList);
+            dictionaryListView.setAdapter(customAdapter);
+            searchText.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+                    String searchString = editable.toString().trim().toLowerCase();
+                    MainActivity.this.customAdapter.getFilter().filter(searchString);
+                }
+            });
+        } else if(session==3) {
+            //setting screen
+            setContentView(R.layout.settings_layout);
+            pickTime = (Button)findViewById(R.id.pick_time);
+            settingText = (TextView)findViewById(R.id.settingText);
+            cardsPerDayText = (EditText)findViewById(R.id.cardsPerDay);
+            loadButton = findViewById(R.id.LoadButton);
+            saveButton = findViewById(R.id.SaveButton);
+
+            pickTime.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    DialogFragment timePicker = new TimePickerFragment();
+                    timePicker.show(getFragmentManager(), "time picker");
+                    //todo import vs v4
+                }
+            });
+            cardsPerDayText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if(actionId==EditorInfo.IME_ACTION_DONE) {
+//                    Log.d(DEBUG_TAG, "New cardsPerDay: " + cardsPerDayText.toString().trim());
+                        cardsPerDay = Integer.parseInt(cardsPerDayText.getText().toString().trim());
+                        Log.d(DEBUG_TAG, "New cardsPerDay: " + Integer.toString(cardsPerDay));
+                        editor.putInt(CARDS_PER_DAY_KEY, cardsPerDay);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            loadButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    readDatabaseSave();
+                }
+            });
+            saveButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    writeDatabaseSave();
+                }
+            });
+        } else if(session==4) {
+            //study timer started
+            undoButton.setVisibility(View.GONE);
+            koreanWordButton.setVisibility(View.GONE);
+            showAnswerButton.setVisibility(View.GONE);
+            wrongAnswerButton.setVisibility(View.GONE);
+            correctAnswerButton.setVisibility(View.GONE);
+            timerButton.setVisibility(View.GONE);
+            timerText.setVisibility(View.VISIBLE);
+        } else if(session==5) {
+            //study timer ended
+            undoButton.setVisibility(View.VISIBLE);
+            koreanWordButton.setVisibility(View.VISIBLE);
+            showAnswerButton.setVisibility(View.VISIBLE);
+            wrongAnswerButton.setVisibility(View.VISIBLE);
+            correctAnswerButton.setVisibility(View.VISIBLE);
+            timerButton.setVisibility(View.VISIBLE);
+            timerText.setVisibility(View.GONE);
         }
     }
     public void changeLayout(int session) {
@@ -827,6 +856,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             //increment newDayMilli
             newDayMilli = (System.currentTimeMillis() + 3600000L); //one hour
 //            newDayMilli = (System.currentTimeMillis() - (System.currentTimeMillis() % 86400000L) + 10800000L);
+//            newDayMilli = newDayMilli + 86400000L; //todo why the above and not this
             editor.putLong(NEW_DAY_MILLI_KEY, newDayMilli);
             editor.apply();
             loadNewCards();
@@ -883,9 +913,6 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
     }
     public void updatedCardAnswer(boolean result) {
         //only method to change the card data
-
-
-
         tempCardHistory.push(tempCard.createCopy());
         ArrayList<CardTable> newCardsCopy = new ArrayList<>();
         for(CardTable cT: newCards) {
@@ -931,11 +958,14 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                     }
 //                    Log.d(DEBUG_TAG, cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
                 }
-                short tempShort = tempCard.getStreak();
-                if(tempShort < 6) {
-                    tempShort += ((short) 1);
+//                short tempShort = tempCard.getStreak();
+//                if(tempShort < 6) {
+//                    tempShort += ((short) 1);
+//                }
+//                tempCard.setStreak(tempShort);
+                if(tempCard.getStreak() < 6) {
+                    tempCard.setStreak(tempCard.getStreak() + 1);
                 }
-                tempCard.setStreak(tempShort);
                 tempCard.setDays(gapMap[tempCard.getStreak()-1]);
             }
         } else {
@@ -962,9 +992,10 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             } else {
                 //study card failed, decrease the streak by 1 and reset the days
                 if(tempCard.getStreak()!=0) {
-                    short tempShort = tempCard.getStreak();
-                    tempShort-=1;
-                    tempCard.setStreak(tempShort);
+//                    short tempShort = tempCard.getStreak();
+//                    tempShort-=1;
+//                    tempCard.setStreak(tempShort);
+                    tempCard.setStreak(tempCard.getStreak() - 1);
                     tempCard.setDays(gapMap[tempCard.getStreak()]);
                 } else {
                     tempCard.setDays(0);
@@ -986,9 +1017,9 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 //                return newCards.get(temptInt);
                 return reviewCardList.get(0);
             } else {
-                //get the card most due, based on the lowest days value and for equal values choose the high streak
+                //get the card most due, based on the lowest days value and for equal values choose the high streak`
                 int index = -1;
-                short tempStreak = -1; //this okay? todo
+                int tempStreak = -1; //this okay? todo
                 int tempDays = Integer.MAX_VALUE;
                 for(int i = 0; i<newCards.size();i++) {
                     if(newCards.get(i).getDays() <= tempDays) {
@@ -1057,7 +1088,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                 if(newCards.size()==0) {
 //                    newCards.clear();
 //                    tempArray.clear();
-                    changeLayout(0);
+                    updatedChangeLayout(0);
                     checkDatabase();
                 }
                 //check post study and post 10min break
@@ -1089,7 +1120,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                 studyReviewMode = true; //reviewmode will start automatically when timer ends
                 reviewCardList = new ArrayList<>(newCards);
                 newCards.clear();
-                changeLayout(4);
+                updatedChangeLayout(4);
                 startStudyTimer(60000, 1000);
                 checkDatabase();
             }
@@ -1098,21 +1129,25 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
     public void cardDone(CardTable cardTable, double answerQuality) {
         //todo change layout
 //        short tempShort = cardTable.getStreak();
-        short tempShort = 0;
+        int tempStreak = 0;
+        int tempDays = 0;
         for(CardTable cT : initialNewCardList) {
             if(cT.getIndexKey() == cardTable.getIndexKey()) {
-                tempShort = cardTable.getStreak();
+                tempStreak = cT.getStreak();
+                tempDays = cT.getDays();
+                //todo same with streak?
             }
         }
         for(CardTable cT : initialReviewList) {
             if(cT.getIndexKey() == cardTable.getIndexKey()) {
-                tempShort = cardTable.getStreak();
+                tempStreak = cT.getStreak();
+                tempDays = cT.getDays();
             }
         }
-        tempShort += (short) 1;
-        cardTable.setStreak(tempShort);
+//        tempStreak +=  1;
+        cardTable.setStreak(tempStreak + 1);
         cardTable.setFactor(calEasinessFactor(cardTable.getFactor(), answerQuality)); //probably wrong
-        cardTable.setDays(calRepetitionInterval(cardTable.getDays(), cardTable.getFactor()));
+        cardTable.setDays(calRepetitionInterval(tempDays, cardTable.getFactor()));
         cardTable.setTime(newDayMilli+((86400000)*(cardTable.getDays()-1)));
         MainActivity.cardDatabase.cardDao().updateCard(cardTable);
     }
@@ -1122,7 +1157,8 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                 timerText.setText(Long.toString(millisUntilFinished/1000));
             }
             public void onFinish() {
-                changeLayout(1);
+                sendOnChannel();
+                updatedChangeLayout(5);
             }
         }.start();
     }
@@ -1255,5 +1291,16 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             // other 'case' lines to check for other
             // permissions this app might request
         }
+    }
+    public void sendOnChannel() {
+        Notification notification = new NotificationCompat.Builder(this, AppChannel.STUDY_WAIT_CHANNEL)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("Test_Title")
+                .setContentText("Test_Message")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .build();
+
+        notificationManagerCompat.notify(1, notification);
     }
 }

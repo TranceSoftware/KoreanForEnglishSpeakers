@@ -6,8 +6,7 @@
     android:layout_height="match_parent"
     android:clickable="true"
     android:focusable="true"
-    android:background="@color/colorPrimaryDark">
-
+    android:background="@drawable/gradient_background_1">
     <Button
         android:id="@+id/TimerButton"
         android:layout_width="wrap_content"
@@ -18,108 +17,11 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:text="Tick_Tock"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/Item0"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Item0"
-        android:textSize="25dp"
-        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"/>
-
-    <Button
-        android:id="@+id/Item2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Item2"
-        android:textSize="25dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <Button
-        android:id="@+id/Item4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Item4"
-        android:textSize="25dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"/>
-
-    <Button
-        android:id="@+id/Item6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Item6"
-        android:textSize="25dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"/>
-
-    <Button
-        android:id="@+id/Item8"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Item8"
-        android:textSize="25dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"/>
-
-    <Button
-        android:id="@+id/Item1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Item1"
-        android:textSize="25dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
-
-    <Button
-        android:id="@+id/Item3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Item3"
-        android:textSize="25dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
-
-    <Button
-        android:id="@+id/Item5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Item5"
-        android:textSize="25dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
-
-    <Button
-        android:id="@+id/Item7"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Item7"
-        android:textSize="25dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
-
-    <Button
-        android:id="@+id/Item9"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Item9"
-        android:textSize="25dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
+        style="@style/Button"/>
 
     <Button
         android:id="@+id/CorrectAnswerButton"
@@ -130,8 +32,11 @@
         android:layout_marginBottom="8dp"
         android:text="✔"
         android:textSize="25dp"
+        android:textColor="@color/Green"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        style="@style/Button"/>
 
     <Button
         android:id="@+id/WrongAnswerButton"
@@ -142,8 +47,11 @@
         android:layout_marginBottom="8dp"
         android:text="X"
         android:textSize="25dp"
+        android:textColor="@color/Red"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        style="@style/Button"/>
 
     <Button
         android:id="@+id/ShowAnswerButton"
@@ -156,9 +64,11 @@
         android:layout_marginBottom="75dp"
         android:text="show"
         android:textSize="20dp"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/WrongAnswerButton"
-        app:layout_constraintStart_toEndOf="@+id/CorrectAnswerButton" />
+        app:layout_constraintStart_toEndOf="@+id/CorrectAnswerButton"
+        style="@style/Button"/>
 
     <Button
         android:id="@+id/KoreanWordButton"
@@ -174,6 +84,43 @@
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/ShowAnswerButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        style="@style/Button"/>
 
+    <Button
+        android:id="@+id/UndoButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="Undo"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/WrongAnswerButton"
+        app:layout_constraintStart_toEndOf="@+id/CorrectAnswerButton"
+        style="@style/Button"/>
+
+    <TextView
+        android:id="@+id/TimerText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Not Set"
+        android:gravity="center"
+        android:textSize="75dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>

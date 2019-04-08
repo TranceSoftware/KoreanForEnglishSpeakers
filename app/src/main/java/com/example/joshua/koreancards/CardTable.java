@@ -15,9 +15,9 @@ public class CardTable implements Serializable {
     private double factor;
     private long time;
     private int days;
-    private short streak;
+    private int streak;
 
-    public CardTable(int indexKey, String nativeWord, String foreignWord, double factor, long time, int days, short streak) {
+    public CardTable(int indexKey, String nativeWord, String foreignWord, double factor, long time, int days, int streak) {
         this.indexKey = indexKey;
         this.nativeWord = nativeWord;
         this.foreignWord = foreignWord;
@@ -27,11 +27,11 @@ public class CardTable implements Serializable {
         this.streak = streak;
     }
 
-    public short getStreak() {
+    public int getStreak() {
         return streak;
     }
 
-    public void setStreak(short streak) {
+    public void setStreak(int streak) {
         this.streak = streak;
     }
 

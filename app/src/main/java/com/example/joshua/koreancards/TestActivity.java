@@ -19,6 +19,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,7 +79,8 @@ public class TestActivity extends Activity {
     private Calendar calendar = Calendar.getInstance();
     private ArrayList<Cell> everyList = new ArrayList<>();
     private Cell currentCell = null;
-    private Button koreanWordButton, showAnswerButton, wrongAnswerButton, correctAnswerButton, timerButton;
+    private Button showAnswerButton, wrongAnswerButton, correctAnswerButton, timerButton;
+    private TextView koreanWordButton;
     private LocalBroadcastManager localBroadcastManager;
     //TODO api catch
     private Resources resources;
@@ -212,8 +214,8 @@ public class TestActivity extends Activity {
 
         //TODO custom layout with all buttons
         //TODO move some of the below onCreat() to a new function which plays which this view loads
-        koreanWordButton = findViewById(R.id.KoreanWordButton);
-        studyList.add(koreanWordButton);
+        koreanWordButton = findViewById(R.id.KoreanWordText);
+//        studyList.add(koreanWordButton);
         showAnswerButton = findViewById(R.id.ShowAnswerButton);
         studyList.add(showAnswerButton);
         wrongAnswerButton = findViewById(R.id.WrongAnswerButton);

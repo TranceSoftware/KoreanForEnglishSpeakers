@@ -52,7 +52,7 @@ public class CustomAdapter extends ArrayAdapter<CardTable> implements Filterable
                 foreignWord.setText(cardTable.getForeignWord());
             }
             if (nativeWord != null) {
-                nativeWord.setText(cardTable.getNativeWord());
+                nativeWord.setText(" - " + cardTable.getNativeWord());
             }
 //            if (eFactor != null) {
 //                eFactor.setText(Double.toString(cardTable.getFactor()));

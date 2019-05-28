@@ -47,7 +47,7 @@ public class StudyFragment extends Fragment {
         View studyView = inflator.inflate(R.layout.study_layout, container, false);
         ConstraintLayout constraintLayout = (ConstraintLayout) inflator.inflate(R.layout.study_layout, container,false);
 
-        koreanWordButton = (Button)constraintLayout.findViewById(R.id.KoreanWordButton);
+        koreanWordButton = constraintLayout.findViewById(R.id.KoreanWordText);
         showAnswerButton = (Button) constraintLayout.findViewById(R.id.ShowAnswerButton);
         wrongAnswerButton = (Button) constraintLayout.findViewById(R.id.WrongAnswerButton);
         correctAnswerButton = (Button) constraintLayout.findViewById(R.id.CorrectAnswerButton);

@@ -86,7 +86,7 @@ public class CustomAdapter extends ArrayAdapter<CardTable> implements Filterable
                 String tempString = constraint.toString().trim().toLowerCase();
                 int counter = 0;
                 Log.d(DEBUG_TAG, "Constraint String value: " + tempString);
-                for(int i =1; i < oldItems.size(); i++) {
+                for(int i =0; i < oldItems.size(); i++) { //i was initiall set to 1 todo
 //                    Log.d(DEBUG_TAG, oldItems.get(i).getEnglish().toLowerCase());
                     if(oldItems.get(i).getNativeWord().toLowerCase().contains(tempString)) {
                         FilteredArrayNames.add(oldItems.get(i));

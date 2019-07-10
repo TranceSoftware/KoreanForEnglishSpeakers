@@ -222,7 +222,7 @@ public class TestActivity extends Activity {
         studyList.add(wrongAnswerButton);
         correctAnswerButton = findViewById(R.id.CorrectAnswerButton);
         studyList.add(correctAnswerButton);
-        timerButton = findViewById(R.id.TimerButton);
+//        timerButton = findViewById(R.id.TimerButton);
         studyList.add(timerButton);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -667,6 +667,7 @@ public class TestActivity extends Activity {
         } else {
             koreanWordButton.setText(currentCell.getEnglish());
         }
+
     }
 
     @Override

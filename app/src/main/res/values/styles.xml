@@ -3,8 +3,8 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimary">@color/CremeBlue</item>
+        <item name="colorPrimaryDark">@color/colorPrimary</item>
         <item name="colorAccent">@color/White</item>
     </style>
     <style name="Button" parent="Widget.AppCompat.Button.Colored">
@@ -16,5 +16,9 @@
         <item name="android:textColor">@color/Black</item>
         <item name="colorControlActivated">@color/CremeBlue</item>
         <item name="colorControlHighlight">@color/Green</item>
+    </style>
+    <style name="MyTimePickerDialogTheme" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/CremeBlue</item>
+        <item name="colorAccent">@color/CremeBlue</item>
     </style>
 </resources>

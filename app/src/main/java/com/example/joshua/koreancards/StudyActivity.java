@@ -65,11 +65,11 @@ public class StudyActivity extends Activity {
 
         resources = this.getResources();
 
-        koreanWordButton = findViewById(R.id.KoreanWordText);
+//        koreanWordButton = findViewById(R.id.KoreanWordText);
         showAnswerButton = findViewById(R.id.ShowAnswerButton);
         wrongAnswerButton = findViewById(R.id.WrongAnswerButton);
         correctAnswerButton = findViewById(R.id.CorrectAnswerButton);
-        timerButton = findViewById(R.id.TimerButton);
+//        timerButton = findViewById(R.id.TimerButton);
 //        item0 = findViewById(R.id.Item0);
 //        item1 = findViewById(R.id.Item1);
 //        item2 = findViewById(R.id.Item2);

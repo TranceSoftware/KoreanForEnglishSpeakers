@@ -25,11 +25,14 @@ public interface CardDao {
     List<CardTable> getCardsDue(double time);
 
     @Query("SELECT * FROM cards WHERE time = 0")
-    List<CardTable> getReviewCards();
+    List<CardTable> getStudyCards();
 
     @Query("SELECT * FROM cards WHERE time != :l")
     List<CardTable> getModifiedCards(Long l); //must be handed Long.MAX_VALUE to work properly
 
     @Query("SELECT * FROM cards WHERE streak > 0")
     List<CardTable> getLearnedWords();
+
+    @Query("SELECT * FROM cards WHERE time == :l")
+    List<CardTable> getNewCards(Long l); //will return all newcards if given Long Max value
 }

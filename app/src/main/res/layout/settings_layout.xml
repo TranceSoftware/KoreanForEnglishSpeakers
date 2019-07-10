@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:clickable="true"
     android:focusable="true"
-    android:background="@drawable/gradiant_background_2">
+    android:background="@drawable/gradient_background_1">
 
     <Button
         android:id="@+id/pick_time"
@@ -16,6 +16,7 @@
         android:text="newtime"
         android:textColor="@color/Black"
         android:visibility="visible"
+        android:textSize="20dp"
         app:layout_constraintBottom_toBottomOf="@+id/newDayText"
         app:layout_constraintEnd_toEndOf="@+id/cardsPerDay"
         app:layout_constraintStart_toStartOf="@+id/cardsPerDay"
@@ -125,28 +126,20 @@
         app:layout_constraintStart_toStartOf="@+id/settingText"
         app:layout_constraintTop_toBottomOf="@+id/settingText" />
 
-    <TextView
-        android:id="@+id/reminderText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
-        android:text="Reminder Time"
-        android:textColor="@color/Black"
-        android:textSize="20dp"
-        app:layout_constraintEnd_toEndOf="@+id/newDayText"
-        app:layout_constraintStart_toStartOf="@+id/newDayText"
-        app:layout_constraintTop_toBottomOf="@+id/newDayText" />
-
     <Button
-        android:id="@+id/reminderTime"
+        android:id="@+id/resetDatabaseButton"
         style="@style/Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="time"
-        app:layout_constraintBottom_toBottomOf="@+id/reminderText"
-        app:layout_constraintEnd_toEndOf="@+id/pick_time"
-        app:layout_constraintStart_toStartOf="@+id/pick_time"
-        app:layout_constraintTop_toTopOf="@+id/reminderText" />
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="32dp"
+        android:text="Reset Database"
+        app:layout_constraintBottom_toTopOf="@+id/LoadButton"
+        app:layout_constraintEnd_toEndOf="@+id/LoadButton"
+        app:layout_constraintStart_toStartOf="@+id/SaveButton" />
 
 
 </android.support.constraint.ConstraintLayout>

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:clickable="true"
     android:focusable="true"
-    android:background="@drawable/gradiant_background_2">
+    android:background="@drawable/gradient_background_1">
 
     <Button
         android:id="@+id/CorrectAnswerButton"
@@ -82,9 +82,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginBottom="156dp"
+        android:layout_marginBottom="8dp"
         android:text="{Korean-Text}"
         android:textColor="@color/Black"
         android:textSize="35dp"
@@ -92,7 +93,8 @@
         app:layout_constraintBottom_toTopOf="@+id/ShowAnswerButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ModeTextView" />
 
     <Button
         android:id="@+id/UndoButton"
@@ -114,16 +116,14 @@
         android:id="@+id/ModeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="36dp"
         android:text="{StudyMode}"
         android:textColor="@color/Black"
         android:textSize="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/KoreanWordText"
-        app:layout_constraintEnd_toEndOf="@+id/KoreanWordText"
-        app:layout_constraintStart_toStartOf="@+id/KoreanWordText"
-        app:layout_constraintTop_toBottomOf="@+id/TimerButton"
-        app:layout_constraintVertical_bias="0.58" />
+        app:layout_constraintEnd_toEndOf="@+id/UndoButton"
+        app:layout_constraintHorizontal_bias="0.535"
+        app:layout_constraintStart_toStartOf="@+id/UndoButton"
+        app:layout_constraintTop_toBottomOf="@+id/UndoButton" />
 
     <TextView
         android:id="@+id/waitingText"
@@ -141,4 +141,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent" />
+
 </android.support.constraint.ConstraintLayout>

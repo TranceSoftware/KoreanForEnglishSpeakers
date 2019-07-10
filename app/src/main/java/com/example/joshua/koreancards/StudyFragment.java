@@ -51,7 +51,7 @@ public class StudyFragment extends Fragment {
         showAnswerButton = (Button) constraintLayout.findViewById(R.id.ShowAnswerButton);
         wrongAnswerButton = (Button) constraintLayout.findViewById(R.id.WrongAnswerButton);
         correctAnswerButton = (Button) constraintLayout.findViewById(R.id.CorrectAnswerButton);
-        timerButton = (Button) constraintLayout.findViewById(R.id.TimerButton);
+//        timerButton = (Button) constraintLayout.findViewById(R.id.TimerButton);
         //initial view
         currentCell = everyList.get(0);
         currentCell.setListID(1);

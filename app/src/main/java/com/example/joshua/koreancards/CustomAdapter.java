@@ -102,5 +102,8 @@ public class CustomAdapter extends ArrayAdapter<CardTable> implements Filterable
         };
         return filter;
     }
-
+    @Override
+    public long getItemId(int position) {
+        return items.get(position).getIndexKey();
+    }
 }

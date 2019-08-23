@@ -4,72 +4,68 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient_background_1"
     android:clickable="true"
     android:focusable="true"
-    android:background="@drawable/gradient_background_1">
+    android:focusableInTouchMode="true"
+    android:id="@+id/settingLayout">
 
     <Button
         android:id="@+id/pick_time"
         style="@style/Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="newtime"
         android:textColor="@color/Black"
-        android:visibility="visible"
         android:textSize="20dp"
-        app:layout_constraintBottom_toBottomOf="@+id/newDayText"
-        app:layout_constraintEnd_toEndOf="@+id/cardsPerDay"
-        app:layout_constraintStart_toStartOf="@+id/cardsPerDay"
-        app:layout_constraintTop_toTopOf="@+id/newDayText" />
+        android:paddingHorizontal="10dp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="@+id/newDayText"
+        app:layout_constraintHorizontal_bias="0.546"
+        app:layout_constraintStart_toStartOf="@+id/newDayText"
+        app:layout_constraintTop_toBottomOf="@+id/newDayText" />
 
     <TextView
         android:id="@+id/settingText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:layout_marginLeft="36dp"
+        android:layout_marginTop="48dp"
+        android:text="New Cards Per Day"
         android:textColor="@color/Black"
         android:textSize="20dp"
-        android:layout_marginTop="56dp"
-        android:text="New Cards Per Day"
         android:visibility="visible"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
+        app:layout_constraintEnd_toEndOf="@+id/button"
+        app:layout_constraintStart_toStartOf="@+id/button"
+        app:layout_constraintTop_toBottomOf="@+id/pick_time" />
 
     <EditText
         android:id="@+id/cardsPerDay"
+        style="@style/Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginTop="16dp"
+        android:imeOptions="actionDone"
         android:inputType="number"
-        android:visibility="visible"
+        android:maxLength="6"
+        android:singleLine="true"
         android:text="10"
         android:textSize="25dp"
-        android:maxLength="6"
-        android:imeOptions="actionDone"
-        android:singleLine="true"
-        app:layout_constraintBottom_toBottomOf="@+id/settingText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/settingText"
-        app:layout_constraintTop_toTopOf="@+id/settingText" />
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="@+id/settingText"
+        app:layout_constraintStart_toStartOf="@+id/settingText"
+        app:layout_constraintTop_toBottomOf="@+id/settingText" />
 
     <Button
         android:id="@+id/SaveButton"
         style="@style/Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
         android:text="Export"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/LoadButton"
-        app:layout_constraintHorizontal_bias="0.272"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
@@ -77,8 +73,8 @@
         style="@style/Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="56dp"
-        android:layout_marginRight="56dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:text="Import"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -87,18 +83,16 @@
     <ListView
         android:id="@+id/loadFileListView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
+        android:layout_height="495dp"
         android:layout_marginTop="30dp"
-        android:maxHeight="400dp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@+id/button"
         app:layout_constraintStart_toStartOf="@+id/button"
         app:layout_constraintTop_toBottomOf="@+id/button"></ListView>
 
-    <TextView
+    <Button
         android:id="@+id/button"
-        android:background="@color/White"
-        android:textColor="@color/Black"
+        style="@style/Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -106,10 +100,11 @@
         android:layout_marginTop="0dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="Settings"
-        android:textSize="30dp"
         android:clickable="false"
-        android:padding="5dp"
+        android:paddingHorizontal="10dp"
+        android:text="Settings"
+        android:textColor="@color/Black"
+        android:textSize="30dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -118,13 +113,14 @@
         android:id="@+id/newDayText"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="50dp"
         android:text="New Day Start Time"
         android:textColor="@color/Black"
         android:textSize="20dp"
-        app:layout_constraintEnd_toEndOf="@+id/settingText"
-        app:layout_constraintStart_toStartOf="@+id/settingText"
-        app:layout_constraintTop_toBottomOf="@+id/settingText" />
+        app:layout_constraintEnd_toEndOf="@+id/button"
+        app:layout_constraintHorizontal_bias="0.629"
+        app:layout_constraintStart_toStartOf="@+id/button"
+        app:layout_constraintTop_toBottomOf="@+id/button" />
 
     <Button
         android:id="@+id/resetDatabaseButton"
@@ -137,9 +133,118 @@
         android:layout_marginRight="8dp"
         android:layout_marginBottom="32dp"
         android:text="Reset Database"
+        android:paddingHorizontal="10dp"
         app:layout_constraintBottom_toTopOf="@+id/LoadButton"
         app:layout_constraintEnd_toEndOf="@+id/LoadButton"
         app:layout_constraintStart_toStartOf="@+id/SaveButton" />
+
+    <Button
+        android:id="@+id/invisibleButton"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="64dp"
+        android:visibility="invisible"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardsPerDay" />
+
+    <Button
+        android:id="@+id/redButton"
+        style="@style/Button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginRight="24dp"
+        android:text=""
+        android:background="@color/CreamRed"
+        app:layout_constraintBottom_toBottomOf="@+id/orangeButton"
+        app:layout_constraintEnd_toStartOf="@+id/orangeButton"
+        app:layout_constraintTop_toTopOf="@+id/orangeButton"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/orangeButton"
+        style="@style/Button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginRight="0dp"
+        android:text=""
+        android:background="@color/CreamOrange"
+        app:layout_constraintBottom_toBottomOf="@+id/invisibleButton"
+        app:layout_constraintEnd_toStartOf="@+id/invisibleButton"
+        app:layout_constraintTop_toTopOf="@+id/invisibleButton" />
+
+    <Button
+        android:id="@+id/yellowButton"
+        style="@style/Button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="0dp"
+        android:text=""
+        android:background="@color/CreamyYellow"
+        app:layout_constraintBottom_toBottomOf="@+id/invisibleButton"
+        app:layout_constraintStart_toEndOf="@+id/invisibleButton"
+        app:layout_constraintTop_toTopOf="@+id/invisibleButton" />
+
+    <Button
+        android:id="@+id/greenButton"
+        style="@style/Button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="24dp"
+        android:text=""
+        android:background="@color/CreamGreen"
+        app:layout_constraintBottom_toBottomOf="@+id/yellowButton"
+        app:layout_constraintStart_toEndOf="@+id/yellowButton"
+        app:layout_constraintTop_toTopOf="@+id/yellowButton" />
+
+    <Button
+        android:id="@+id/blueButton"
+        style="@style/Button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="32dp"
+        android:text=""
+        android:background="@color/CremeBlue"
+        app:layout_constraintEnd_toEndOf="@+id/redButton"
+        app:layout_constraintStart_toStartOf="@+id/redButton"
+        app:layout_constraintTop_toBottomOf="@+id/redButton" />
+
+    <Button
+        android:id="@+id/purpleButton"
+        style="@style/Button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="32dp"
+        android:text=""
+        android:background="@color/CremePurple"
+        app:layout_constraintEnd_toEndOf="@+id/orangeButton"
+        app:layout_constraintStart_toStartOf="@+id/orangeButton"
+        app:layout_constraintTop_toBottomOf="@+id/orangeButton" />
+
+    <Button
+        android:id="@+id/pinkButton"
+        style="@style/Button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="32dp"
+        android:text=""
+        android:background="@color/CremePink"
+        app:layout_constraintEnd_toEndOf="@+id/yellowButton"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/yellowButton"
+        app:layout_constraintTop_toBottomOf="@+id/yellowButton" />
+
+    <Button
+        android:id="@+id/greyButton"
+        style="@style/Button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="32dp"
+        android:text=""
+        android:background="@color/CremeGrey"
+        app:layout_constraintEnd_toEndOf="@+id/greenButton"
+        app:layout_constraintStart_toStartOf="@+id/greenButton"
+        app:layout_constraintTop_toBottomOf="@+id/greenButton" />
 
 
 </android.support.constraint.ConstraintLayout>

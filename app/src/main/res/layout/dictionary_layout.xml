@@ -6,12 +6,13 @@
     android:layout_height="match_parent"
     android:clickable="true"
     android:focusable="true"
-    android:background="@drawable/gradient_background_1">
+    android:background="@drawable/gradient_background_1"
+    android:id="@+id/dictionaryLayout">
 
     <ListView
         android:id="@+id/dictionaryListView"
         android:layout_width="fill_parent"
-        android:layout_height="495dp"
+        android:layout_height="500dp"
         android:layout_marginStart="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="35dp"
@@ -26,8 +27,7 @@
     <EditText
         android:id="@+id/searchButton"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_height="40dp"
         android:inputType="text"
         android:visibility="visible"
         android:hint="Search"

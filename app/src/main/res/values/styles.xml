@@ -3,12 +3,14 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/CremeBlue</item>
-        <item name="colorPrimaryDark">@color/colorPrimary</item>
+        <item name="colorPrimary">@color/Black</item>
+        <item name="colorPrimaryDark">@color/Black</item>
+        <item name="actionMenuTextColor">@color/Black</item>
         <item name="colorAccent">@color/White</item>
     </style>
     <style name="Button" parent="Widget.AppCompat.Button.Colored">
-        <item name="colorButtonNormal">@color/White</item>
+        <!--<item name="colorButtonNormal">@color/White</item>-->
+        <item name="android:background">@drawable/okay_button</item>
         <item name="android:textColor">@color/Black</item>
     </style>
     <style name="EditTextTheme" parent="Theme.AppCompat.Light.DarkActionBar">

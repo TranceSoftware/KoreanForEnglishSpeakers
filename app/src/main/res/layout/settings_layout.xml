@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient_background_1"
+    android:background="@drawable/gradiant_background_4"
     android:clickable="true"
     android:focusable="true"
     android:focusableInTouchMode="true"
@@ -12,7 +12,7 @@
 
     <Button
         android:id="@+id/pick_time"
-        style="@style/Button"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -41,7 +41,7 @@
 
     <EditText
         android:id="@+id/cardsPerDay"
-        style="@style/Button"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -58,25 +58,25 @@
 
     <Button
         android:id="@+id/SaveButton"
-        style="@style/Button"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
         android:text="Export"
         android:visibility="visible"
+        android:layout_marginBottom="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/LoadButton"
-        style="@style/Button"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:text="Import"
         android:visibility="visible"
+        android:layout_marginBottom="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -92,7 +92,7 @@
 
     <Button
         android:id="@+id/button"
-        style="@style/Button"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -124,7 +124,7 @@
 
     <Button
         android:id="@+id/resetDatabaseButton"
-        style="@style/Button"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -150,12 +150,11 @@
 
     <Button
         android:id="@+id/redButton"
-        style="@style/Button"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginRight="24dp"
         android:text=""
-        android:background="@color/CreamRed"
+        android:background="@drawable/bg_btn_outline_red"
         app:layout_constraintBottom_toBottomOf="@+id/orangeButton"
         app:layout_constraintEnd_toStartOf="@+id/orangeButton"
         app:layout_constraintTop_toTopOf="@+id/orangeButton"
@@ -163,48 +162,44 @@
 
     <Button
         android:id="@+id/orangeButton"
-        style="@style/Button"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginRight="0dp"
         android:text=""
-        android:background="@color/CreamOrange"
+        android:background="@drawable/bg_btn_outline_orange"
         app:layout_constraintBottom_toBottomOf="@+id/invisibleButton"
         app:layout_constraintEnd_toStartOf="@+id/invisibleButton"
         app:layout_constraintTop_toTopOf="@+id/invisibleButton" />
 
     <Button
         android:id="@+id/yellowButton"
-        style="@style/Button"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginLeft="0dp"
         android:text=""
-        android:background="@color/CreamyYellow"
+        android:background="@drawable/bg_btn_outline_yellow"
         app:layout_constraintBottom_toBottomOf="@+id/invisibleButton"
         app:layout_constraintStart_toEndOf="@+id/invisibleButton"
         app:layout_constraintTop_toTopOf="@+id/invisibleButton" />
 
     <Button
         android:id="@+id/greenButton"
-        style="@style/Button"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginLeft="24dp"
         android:text=""
-        android:background="@color/CreamGreen"
+        android:background="@drawable/bg_btn_outline_green"
         app:layout_constraintBottom_toBottomOf="@+id/yellowButton"
         app:layout_constraintStart_toEndOf="@+id/yellowButton"
         app:layout_constraintTop_toTopOf="@+id/yellowButton" />
 
     <Button
         android:id="@+id/blueButton"
-        style="@style/Button"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginTop="32dp"
         android:text=""
-        android:background="@color/CremeBlue"
+        android:background="@drawable/bg_btn_blue"
         app:layout_constraintEnd_toEndOf="@+id/redButton"
         app:layout_constraintStart_toStartOf="@+id/redButton"
         app:layout_constraintTop_toBottomOf="@+id/redButton" />
@@ -216,7 +211,7 @@
         android:layout_height="50dp"
         android:layout_marginTop="32dp"
         android:text=""
-        android:background="@color/CremePurple"
+        android:background="@drawable/bg_btn_outline_purple"
         app:layout_constraintEnd_toEndOf="@+id/orangeButton"
         app:layout_constraintStart_toStartOf="@+id/orangeButton"
         app:layout_constraintTop_toBottomOf="@+id/orangeButton" />
@@ -228,7 +223,7 @@
         android:layout_height="50dp"
         android:layout_marginTop="32dp"
         android:text=""
-        android:background="@color/CremePink"
+        android:background="@drawable/bg_btn_outline_pink"
         app:layout_constraintEnd_toEndOf="@+id/yellowButton"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/yellowButton"
@@ -241,7 +236,7 @@
         android:layout_height="50dp"
         android:layout_marginTop="32dp"
         android:text=""
-        android:background="@color/CremeGrey"
+        android:background="@drawable/bg_btn_outline_grey"
         app:layout_constraintEnd_toEndOf="@+id/greenButton"
         app:layout_constraintStart_toStartOf="@+id/greenButton"
         app:layout_constraintTop_toBottomOf="@+id/greenButton" />

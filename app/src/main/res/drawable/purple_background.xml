@@ -8,20 +8,44 @@
     </item>
     <item>
         <shape android:shape="rectangle">
-            <corners android:radius="1dp" android:topLeftRadius="20dp" android:topRightRadius="20dp" android:bottomLeftRadius="0dp" android:bottomRightRadius="0dp"/>
-            <padding android:left="10dp" android:right="10dp" android:top="10dp" android:bottom="10dp"/>
+            <padding android:left="10dp" android:right="10dp" android:top="10dp"/>
             <solid android:color="@color/CremePurple"/>
-
+            <corners android:topLeftRadius="20dp" android:topRightRadius="20dp"
+                android:bottomLeftRadius="0dp" android:bottomRightRadius="0dp"/>
 
         </shape>
     </item>
-    <item android:top="200px" android:bottom="200px" android:left="20px" android:right="20px">
+    <item android:top="200px" android:bottom="210px" android:left="20px" android:right="20px">
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp"/>
+            <padding android:left="1dp" android:right="1dp" android:top="1dp" android:bottom="1dp"/>
+            <solid android:color="@color/Black"/>
+
+        </shape>
+    </item>
+    <item android:top="200px" android:bottom="210px" android:left="20px" android:right="20px">
         <shape android:shape="rectangle">
             <corners android:radius="20dp"/>
             <padding android:left="10dp" android:right="10dp" android:top="10dp" android:bottom="10dp"/>
-            <solid android:color="#FFFFFF"/>
+
 
             <stroke android:width="5dp" android:color="#808080"/>
+
+        </shape>
+    </item>
+    <item android:top="190px" android:bottom="200px" android:left="9px" android:right="9px">
+        <shape android:shape="rectangle">
+            <corners android:radius="17dp"/>
+            <padding android:left="1dp" android:right="1dp" android:top="0dp" android:bottom="0dp"/>
+            <solid android:color="@color/Black"/>
+
+        </shape>
+    </item>
+    <item android:top="188px" android:bottom="198px" android:left="6px" android:right="6px">
+        <shape android:shape="rectangle">
+            <corners android:radius="16dp"/>
+            <padding android:left="1dp" android:right="1dp" android:top="1dp" android:bottom="1dp"/>
+            <solid android:color="@color/White"/>
 
         </shape>
     </item>

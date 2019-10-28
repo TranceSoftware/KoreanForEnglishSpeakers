@@ -1,6 +1,7 @@
 package com.example.joshua.koreancards;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -23,9 +25,9 @@ public class CustomAdapter extends ArrayAdapter<CardTable> implements Filterable
     private Context context;
     private ArrayList<CardTable> items;
     private ArrayList<CardTable> oldItems;
+    private int sdk;
 
-
-    public CustomAdapter(Context context, int resourceLayout, ArrayList<CardTable> items) {
+    public CustomAdapter(Context context, int resourceLayout, ArrayList<CardTable> items, int sdk) {
         super(context, resourceLayout, items);
         this.items = items;
         this.resourceLayout = resourceLayout;
@@ -46,6 +48,7 @@ public class CustomAdapter extends ArrayAdapter<CardTable> implements Filterable
         if (cardTable != null) {
             TextView foreignWord = (TextView) view.findViewById(R.id.foreignText);
             TextView nativeWord = (TextView) view.findViewById(R.id.nativeText);
+            ImageView posButton = (ImageView) view.findViewById(R.id.button1);
 //            TextView eFactor = (TextView) view.findViewById(R.id.eFactorText);
 
             if (foreignWord != null) {
@@ -54,9 +57,38 @@ public class CustomAdapter extends ArrayAdapter<CardTable> implements Filterable
             if (nativeWord != null) {
                 nativeWord.setText(" - " + cardTable.getNativeWord());
             }
-//            if (eFactor != null) {
-//                eFactor.setText(Double.toString(cardTable.getFactor()));
-//            }
+            if(posButton != null) {
+                switch (cardTable.getPos()) {
+                    case "n":
+                        if(sdk < Build.VERSION_CODES.JELLY_BEAN) {
+                            posButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_btn_blue));
+                        } else {
+                            posButton.setBackground(context.getResources().getDrawable(R.drawable.bg_btn_blue));
+                        }
+                        break;
+                    case "v":
+                        if(sdk < Build.VERSION_CODES.JELLY_BEAN) {
+                            posButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_btn_outline_green));
+                        } else {
+                            posButton.setBackground(context.getResources().getDrawable(R.drawable.bg_btn_outline_green));
+                        }
+                        break;
+                    case "j":
+                        if(sdk < Build.VERSION_CODES.JELLY_BEAN) {
+                            posButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_btn_outline_red));
+                        } else {
+                            posButton.setBackground(context.getResources().getDrawable(R.drawable.bg_btn_outline_red));
+                        }
+                        break;
+                    case "r":
+                        if(sdk < Build.VERSION_CODES.JELLY_BEAN) {
+                            posButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.bg_btn_outline_pink));
+                        } else {
+                            posButton.setBackground(context.getResources().getDrawable(R.drawable.bg_btn_outline_pink));
+                        }
+                        break;
+                }
+            }
         }
         return view;
     }

@@ -6,12 +6,12 @@
     android:layout_height="match_parent"
     android:clickable="true"
     android:focusable="true"
-    android:background="@drawable/gradient_background_1"
+    android:background="@drawable/gradiant_background_4"
     android:id="@+id/studyLayout">
 
     <Button
         android:id="@+id/CorrectAnswerButton"
-        style="@style/Button"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -25,7 +25,7 @@
 
     <Button
         android:id="@+id/WrongAnswerButton"
-        style="@style/Button"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
@@ -39,7 +39,7 @@
 
     <Button
         android:id="@+id/ShowAnswerButton"
-        style="@style/Button"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -88,6 +88,7 @@
         android:layout_marginRight="8dp"
         android:layout_marginBottom="8dp"
         android:text="{Korean-Text}"
+        android:paddingHorizontal="10dp"
         android:textColor="@color/Black"
         android:textSize="35dp"
         android:visibility="visible"
@@ -100,7 +101,7 @@
 
     <Button
         android:id="@+id/UndoButton"
-        style="@style/Button"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"

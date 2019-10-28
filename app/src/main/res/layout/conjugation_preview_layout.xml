@@ -2,40 +2,48 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/conjugation_preview_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clickable="true"
-    android:focusable="true"
     android:background="@drawable/gradiant_background_4"
-    android:id="@+id/dictionaryLayout">
+    android:clickable="true"
+    android:focusable="true">
 
     <ListView
-        android:id="@+id/dictionaryListView"
+        android:id="@+id/conjugationListView"
         android:layout_width="fill_parent"
         android:layout_height="500dp"
-        android:layout_marginStart="10dp"
         android:layout_marginLeft="10dp"
-        android:layout_marginTop="35dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginTop="50dp"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/searchButton"></ListView>
 
-    <EditText
+    <TextView
         android:id="@+id/searchButton"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="fill_parent"
         android:layout_height="40dp"
         android:inputType="text"
+        android:text="New Verbs Learned Today"
         android:visibility="visible"
-        android:hint="Search"
-        android:gravity="center"
-        android:textColor="@color/Black"
-        android:background="@color/White"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-    </android.support.constraint.ConstraintLayout>
+
+    <Button
+        android:id="@+id/conjugationStartButton"
+        style="@style/ButtonBorder.Accent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+
+</android.support.constraint.ConstraintLayout>

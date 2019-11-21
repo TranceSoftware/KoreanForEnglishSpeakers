@@ -92,16 +92,19 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
     private Button showAnswerButton, wrongAnswerButton, correctAnswerButton, undoButton, reviewButton, conjugationButton;
     private SoundPool soundPool;
     private Button pickTime;
-    private TextView settingText, koreanWordButton, studyModeText, wordsLearnedText, infoText, waitingText, newDayText;
+    private TextView settingText, koreanWordButton, studyModeText, wordsLearnedText, infoText, waitingText, newDayText, wrongAnswerText;
     private EditText cardsPerDayText;
 
     private static CardDatabase cardDatabase;
-    private int[] gapMap = new int[]{0,1,2,3,5,8};
+    private int[] gapMap = new int[]{1,2,3,4,5};
     private boolean studyReviewMode = false;
 
     private TextView timerText;
 
-    private Stack<CardTable> tempCardHistory = new Stack<>();
+    private Stack<Integer> studyHistory = new Stack<>();
+    private Stack<Integer> reviewHistory = new Stack<>();
+    private Stack<Integer> conjugationHistory;
+    private Stack<Integer> conjAnswerHistory = new Stack<>();
     private Stack<ArrayList<CardTable>> newCardHistory = new Stack<>();
     private Stack<ArrayList<CardTable>> reviewCardHistory = new Stack<>();
 
@@ -132,10 +135,19 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
     private String DAYDONE_ID = "daydone_id";
     private ArrayList<CardTable> finishedVerbs = new ArrayList<>();
     private int sdk = android.os.Build.VERSION.SDK_INT;
-    private Button conjugationStartButton, studyPreviewStart, pastButton, continuousButton, perfectButton, conjugationCorrect, conjugationWrong;
+    private Button conjugationStartButton, studyPreviewStart;
     private ListView conjugationListView, studyPreviewListView;
-    private int conjugationIndex, conjugationAnswers, wrongConjugationAnswers, conjugationPasses;
-    private TextView baseVerb, modeTextView;
+    private int studyIndex, wrongStudyAnswers, studyPasses, reviewIndex;
+    private int conjugationIndex, conjugationAnswers, conjugationPasses, conjugationWrongAnswers;
+    private NeoStack neoStack;
+    private Button conjugationCorrectAnswerButton, conjugationWrongAnswerButton, conjugationShowAnswerButton, conjugationUndoButton;
+    private TextView conjugationKoreanWordText, conjugationModeTextView;
+    private int tomorrowCardsPerDay;
+    private final String TOMORROW_CARDS_PER_DAY_ID = "cards_per_day_id";
+
+    private AlertDialog.Builder builder;
+    private boolean studyStarted = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -239,49 +251,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         }
     }
     public void nextRound() {
-        if(viewID!=4) {
-            showAnswerButton.setVisibility(View.VISIBLE);
-        }
-        Log.d(DEBUG_TAG, Integer.toString(reviewCardList.size()));
-        correctAnswerButton.setClickable(false);
-        wrongAnswerButton.setClickable(false);
-        if(reviewCardList.size() > 0 && studyReviewMode == true) {
-            //reviewmode for cards due at the beginning of the exercise
-            koreanWordButton.setText("♫");
-            studyModeText.setText("Reviewing, " + reviewCardList.size() + " cards left");
-            if(!waitingTimer) {
-                playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
-            }
 
-        } else if(reviewCardList.size() > 0 && studyReviewMode == false) {
-            koreanWordButton.setText("♫");
-            studyModeText.setText("Reviewing, " + reviewCardList.size() + " cards left");
-            playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
-        } else {
-            studyModeText.setText("Studying New Cards");
-            if (tempCard.getStreak() < 4) {
-                playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
-                //            updatedPlaySound(tempCard.getForeignWord());
-            }
-            if (tempCard.getStreak() <= 3) {
-                koreanWordButton.setText(tempCard.getForeignWord());
-            } else if (tempCard.getStreak() == 4 || studyReviewMode == true) {
-                koreanWordButton.setText("♫");
-                //            updatedPlaySound(tempCard.getForeignWord());
-                playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
-            } else {
-                Log.d(DEBUG_TAG, "ReviewCard Streak: " + Integer.toString(tempCard.getStreak()));
-                koreanWordButton.setText(tempCard.getNativeWord());
-            }
-            if(tempCard.getStreak()==0) {
-                showAnswerButton.setVisibility(View.INVISIBLE);
-                correctAnswerButton.setClickable(true);
-                koreanWordButton.setText(koreanWordButton.getText() + "\n" + tempCard.getNativeWord());
-            } else {
-//                koreanWordButton.setText(koreanWordButton.getText() + " - " + tempCard.getStreak());
-                koreanWordButton.setText(koreanWordButton.getText());
-            }
-        }
     }
     public void updatedChangeLayout(int session) {
         viewID = session;
@@ -322,19 +292,17 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                         if (newCards.size() > 0 || reviewCardList.size() > 0) {
                             Log.d(DEBUG_TAG, "ReviewList size: " + Integer.toString(reviewCardList.size()));
 //                    Log.d(DEBUG_TAG, "BundleList size: " + bundleList.size());
-                            updatedChangeLayout(9);
-//                            for (CardTable cT : newCards) {
-//                                initialNewCardList.add(cT.createCopy());
-//                            }
-//                            for (CardTable cT : reviewCardList) {
-//                                initialReviewList.add(cT.createCopy());
-//                            }
-//                            if (reviewCardList.size() > 0) {
-//                                tempCard = reviewCardList.get(0);
-//                            } else {
-//                                tempCard = newCards.get(0);
-//                            }
-//                            nextRound();
+
+                            if(!studyStarted) {
+                                if (reviewCardList.isEmpty()) {
+                                    neoStack = new NeoStack(newCards);
+                                } else {
+                                    reviewIndex = 0;
+                                }
+                                updatedChangeLayout(9);
+                            } else {
+                                updatedChangeLayout(1);
+                            }
                         }
                     }
                 }
@@ -357,6 +325,8 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                             conjugationIndex = 0;
                             conjugationAnswers = 0;
                             conjugationPasses = 0;
+                            conjugationWrongAnswers = 0;
+                            conjugationHistory = new Stack<>();
                             updatedChangeLayout(8);
                         } else {
                             //just resume
@@ -389,14 +359,15 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                             newCards.add(cT);
                             //todo set defaults
                         }
+                        neoStack = new NeoStack(newCards);
+                        studyPasses=1;
                         updatedChangeLayout(1);
-                        tempCard = newCards.get(0);
-                        nextRound();
                     }
                 }
             });
         } else if(session==1) {
             //study screen
+            studyStarted = true;
             setContentView(R.layout.study_layout);
             constraintLayout=(ConstraintLayout)findViewById(R.id.studyLayout);
             chooseBackground(backgroundID);
@@ -409,144 +380,283 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             correctAnswerButton.setTextColor(this.getResources().getColor(R.color.Green));
             undoButton = findViewById(R.id.UndoButton);
             timerText = findViewById(R.id.TimerText);
+            if(reviewIndex < reviewCardList.size()) {
+                koreanWordButton.setText("♪♫♪");
+            } else {
+                if (studyPasses < 2) {
+                    koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
+                } else if (studyPasses < 4) {
+                    koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
+                } else {
+                    koreanWordButton.setText("♪♫♪");
+                }
+            }
             koreanWordButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(DEBUG_TAG, tempCard.getIndexKey() + "_" + tempCard.getForeignWord());
-                    if(tempCard.getStreak() < 5) {
-                        playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");;
-                    } else if(studyReviewMode) {
-                        playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
-                    }
+//                    playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
                 }
             });
-
+            if(reviewIndex < reviewCardList.size()) {
+                studyModeText.setText("Reviewing: " + (reviewCardList.size() - reviewIndex) + " cards left.");
+            } else if(studyPasses < 1){
+                studyModeText.setText("Learning Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+            } else if(studyPasses < 3) {
+                studyModeText.setText("Reading Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+            } else if(studyPasses < 5) {
+                studyModeText.setText("Memory Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+            } else {
+                studyModeText.setText("Hearing Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+            }
             showAnswerButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(DEBUG_TAG, "Showanswer button clicked");
-                    if (tempCard.getStreak() <= 3) {
-                        showAnswerButton.setText(tempCard.getNativeWord());
-                    } else if (tempCard.getStreak() == 4 || studyReviewMode == true) {
-                        showAnswerButton.setText(tempCard.getNativeWord() + " - " + tempCard.getForeignWord());
+                    if(reviewIndex < reviewCardList.size()) {
+                        showAnswerButton.setText(newCards.get(studyIndex).getForeignWord());
                     } else {
-                        showAnswerButton.setText(tempCard.getForeignWord());
-                        playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
+                        if(studyPasses < 1) {
+                            //todo learning phase
+                            showAnswerButton.setText(neoStack.peak().getNativeWord());
+                        }
+                        if (studyPasses < 3) {
+                            showAnswerButton.setText(newCards.get(studyIndex).getNativeWord()); //todo change this based on studypasses
+                        } else if (studyPasses < 5) {
+                            showAnswerButton.setText(newCards.get(studyIndex).getForeignWord());
+                        } else {
+                            //                        showAnswerButton.setText("♪♫♪");
+                            showAnswerButton.setText(newCards.get(studyIndex).getForeignWord() + " - " + newCards.get(studyIndex).getNativeWord());
+                        }
+                        //                    playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
                     }
+                    wrongAnswerButton.setClickable(true);
                     correctAnswerButton.setClickable(true);
-                    if(tempCard.getStreak() > 0) {
-                        wrongAnswerButton.setClickable(true);
-                    }
                 }
             });
             wrongAnswerButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(DEBUG_TAG, "Studyreviewmode: " + studyReviewMode);
-                    updatedCardAnswer(false);
-                    for(CardTable cT : newCards) {
-                        if(cT.getIndexKey() == tempCard.getIndexKey()) {
-                            cT.setDays(tempCard.getDays());
-                            cT.setStreak(tempCard.getStreak());
+                    if(reviewIndex < reviewCardList.size()) {
+                        reviewHistory.push(0);
+                        //modifycard so that days and streak become 0, calculate new e factor
+                        //todo
+                        //add card to newlist
+                        //todo modify card here in case app restarts?
+                        newCards.add(reviewCardList.get(reviewIndex));
+                        newCards.get(newCards.size() - 1).setFactor(calEasinessFactor(reviewCardList.get(reviewIndex).getFactor(), 0.0));
+                        newCards.get(newCards.size() - 1).setDays(0);
+                        newCards.get(newCards.size() - 1).setStreak(0);
+
+                        MainActivity.cardDatabase.cardDao().updateCard(newCards.get(newCards.size() - 1));
+
+                        initialNewCardList.add(newCards.get(newCards.size() - 1).createCopy());
+                        //increment
+                        reviewIndex += 1;
+                        if(reviewIndex >= reviewCardList.size()) {
+                            //review done
+                            neoStack = new NeoStack(newCards); //todo handle back button
+                            if (studyPasses < 3) {
+                                koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
+                            } else if (studyPasses < 5) {
+                                koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
+                            } else {
+                                koreanWordButton.setText("♪♫♪");
+                            }
+                        }
+                    } else {
+                        if(studyPasses == 0) {
+                            //todo study logic
+                            studyHistory.push(neoStack.peak().getIndexKey());
+                            studyHistory.push(1); //1 for correct and 0 for incorrect, index followed by this value in pairs
+                            if(neoStack.peak().getStreak() >= 1) {
+                                neoStack.peak().setStreak(neoStack.peak().getStreak() - 1);
+                            }
+                            neoStack.push(gapMap[neoStack.peak().getStreak()], neoStack.pop()); //todo what if there are less than five cards?
+                            if(neoStack.checkStatus()) {
+                                //done learning
+                                studyPasses += 1;
+                            }
+                        } else {
+                            studyHistory.push(0);
+                            studyIndex += 1;
+                            wrongStudyAnswers += 1;
+                            if (studyIndex >= newCards.size()) {
+                                if (wrongStudyAnswers == 0) {
+                                    studyPasses += 1;
+                                    //todo check for if it's done
+                                }
+                                Collections.shuffle(newCards);
+                                studyIndex = 0;
+                                wrongStudyAnswers = 0;
+                                //done with a pass
+                                //scramble
+                            }
                         }
                     }
-                    for(CardTable cT : reviewCardList) {
-                        if (cT.getIndexKey() == tempCard.getIndexKey()) {
-                            cT.setDays(tempCard.getDays());
-                            cT.setStreak(tempCard.getStreak());
-                        }
+                    if (studyPasses < 3) {
+                        koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
+                    } else if (studyPasses < 5) {
+                        koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
+                    } else {
+                        koreanWordButton.setText("♪♫♪");
                     }
-                    Log.d(DEBUG_TAG, "Tempcard after: " + tempCard.getForeignWord() + ", days-" + tempCard.getDays() + ", streak-" + tempCard.getStreak() + "\tTime: " + tempCard.getTime());
-                    checkDeckStatus();
-                    int i = 0;
-                    for (CardTable cT : newCards) {
-                        Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak() + "\tTime: " + cT.getTime());
-                        i += 1;
+                    if (reviewIndex < reviewCardList.size()) {
+                        studyModeText.setText("Reviewing: " + (reviewCardList.size() - reviewIndex) + " cards left.");
+                    } else if (studyPasses < 1) {
+                        studyModeText.setText("Learning Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    } else if (studyPasses < 3) {
+                        studyModeText.setText("Reading Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    } else if (studyPasses < 5) {
+                        studyModeText.setText("Memory Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    } else {
+                        studyModeText.setText("Hearing Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
                     }
-                    int j = 0;
-                    for (CardTable cT : reviewCardList) {
-                        Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak() + "\tTime: " + cT.getTime());
-                        j += 1;
-                    }
-                    Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
-                    Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCards.size()));
-                    Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardList.size()));
-                    Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
-                    if (newCards.size() > 0 || reviewCardList.size() > 0) {
-                        tempCard = updatedNextCard();
-                        nextRound();
-                        showAnswerButton.setText("?");
-                    }
-
-
+                    showAnswerButton.setText("?");
+                    correctAnswerButton.setClickable(false);
+                    wrongAnswerButton.setClickable(false);
                 }
             });
             undoButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int i = 0;
-                    undoButtonPressed();
-                    for (CardTable cT : newCards) {
-                        Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak() + "\tTime: " + cT.getTime());
-                        i += 1;
+                    int tempAnswer;
+                    if(reviewIndex <= reviewCardList.size() && reviewIndex != 0 && studyIndex == 0 && studyPasses == 0) {
+                        //review process, regardless of edge case (just began, in the middle, at the end) the process is the same
+                        tempAnswer = reviewHistory.pop();
+                        if (tempAnswer == 1) {
+                            //card was answered correctly
+                            //undo the write to database
+                            undoCardWrite(reviewCardList.get(reviewIndex));
+                        } else {
+                            //remove from new list it wsa added to
+                            for (int i = 0; i < newCards.size(); i++) {
+                                if (newCards.get(i).getIndexKey() == reviewCardList.get(reviewIndex).getIndexKey()) {
+                                    newCards.remove(i);
+                                    break;
+                                }
+                            }
+                        }
+                        koreanWordButton.setText("♪♫♪"); //this is irrelevant unless study mode i.e. we are undoing the last line
+                        //better than doing a check
+                        reviewIndex -= 1;
+                    } else if(studyPasses == 0 && !studyHistory.isEmpty()) {
+                        neoStack.studyUndo(studyHistory.pop(), studyHistory.pop());
+                        koreanWordButton.setText(neoStack.peak().getForeignWord());
+                    } else if(studyIndex < newCards.size() && studyIndex != 0) {
+                        //can't undo to a previous iteration so no edge case scenario
+                        studyIndex -= 1;
+                        tempAnswer = studyHistory.pop();
+                        if (tempAnswer == 1) {
+                            wrongStudyAnswers -= 1;
+                        } else {
+                            //nothing
+                        }
                     }
-                    int j = 0;
-                    for (CardTable cT : reviewCardList) {
-                        Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak() + "\tTime: " + cT.getTime());
-                        j += 1;
+                    //todo do we need a final else?
+                    if (studyPasses < 3) {
+                        koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
+                    } else if (studyPasses < 5) {
+                        koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
+                    } else {
+                        koreanWordButton.setText("♪♫♪");
                     }
-                    Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
-                    Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCardHistory.size()));
-                    Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardHistory.size()));
-                    Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
-                    nextRound();
-                    showAnswerButton.setText("?");
-                    //check status of deck?
+                    if (reviewIndex < reviewCardList.size()) {
+                        studyModeText.setText("Reviewing: " + (reviewCardList.size() - reviewIndex) + " cards left.");
+                    } else if (studyPasses < 1) {
+                        studyModeText.setText("Learning Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    } else if (studyPasses < 3) {
+                        studyModeText.setText("Reading Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    } else if (studyPasses < 5) {
+                        studyModeText.setText("Memory Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    } else {
+                        studyModeText.setText("Hearing Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    }
                 }
             });
             correctAnswerButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(DEBUG_TAG, "Studyreviewmode: " + studyReviewMode);
-                    int i = 0;
-                    for (CardTable cT : newCards) {
-                        Log.d(DEBUG_TAG, i + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak() + "\tTime: " + cT.getTime());
-                        i += 1;
-                    }
-                    int j = 0;
-                    for (CardTable cT : reviewCardList) {
-                        Log.d(DEBUG_TAG, j + " - " + cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak() + "\tTime: " + cT.getTime());
-                        j += 1;
-                    }
-                    Log.d(DEBUG_TAG, "AnswerHistory Size: " + Integer.toString(tempCardHistory.size()));
-                    Log.d(DEBUG_TAG, "NewCardList size: " + Integer.toString(newCards.size()));
-                    Log.d(DEBUG_TAG, "ReviewList Size: " + Integer.toString(reviewCardList.size()));
-                    Log.d(DEBUG_TAG, "Boolean status: " + Boolean.toString(studyReviewMode));
-                    updatedCardAnswer(true);
-                    for(CardTable cT : newCards) {
-                        if(cT.getIndexKey() == tempCard.getIndexKey()) {
-                            cT.setDays(tempCard.getDays());
-                            cT.setStreak(tempCard.getStreak());
+                    if(reviewIndex < reviewCardList.size()) {
+                        reviewHistory.push(1);
+                        //todo
+                        //card done, no need to do card modify if correct done on its own
+                        cardDone(reviewCardList.get(reviewIndex), 5);
+                        //increment
+                        reviewIndex += 1;
+                        if(reviewIndex >= reviewCardList.size()) {
+                            neoStack = new NeoStack(newCards); //todo handle back button
+                            if (studyPasses < 3) {
+                                koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
+                            } else if (studyPasses < 5) {
+                                koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
+                            } else {
+                                koreanWordButton.setText("♪♫♪");
+                            }
+                        }
+                    } else {
+                        if(studyPasses==0) {
+                            //todo study logic
+                            studyHistory.push(neoStack.peak().getIndexKey());
+                            studyHistory.push(-1); //-1 for correct and 1 for incorrect, index followed by this value in pairs
+                            if(neoStack.peak().getStreak() < 4) {
+                                neoStack.peak().setStreak(neoStack.peak().getStreak() + 1);
+                            }
+                            neoStack.push(gapMap[neoStack.peak().getStreak()], neoStack.pop()); //todo what if there are less than five cards?
+                            if(neoStack.checkStatus()) {
+                                //done learning
+                                studyPasses += 1;
+                            }
+                        } else {
+                            studyHistory.push(1);
+                            studyIndex += 1;
+                            if (studyIndex >= newCards.size()) {
+                                if (wrongStudyAnswers == 0) {
+                                    studyPasses += 1;
+                                    if (studyPasses >= 7) {
+                                        for (CardTable cT : newCards) {
+                                            Log.d(DEBUG_TAG, "Card done: " + cT.getIndexKey() + "-" + cT.getNativeWord());
+                                            cardDone(cT, 5);
+                                        }
+                                        Log.d(DEBUG_TAG, "Day is done.");
+                                        dayDone = true;
+                                        editor.putBoolean(DAYDONE_ID, dayDone);
+                                        editor.apply();
+
+                                        updatedChangeLayout(0);
+                                    }
+                                }
+                                Collections.shuffle(newCards);
+                                studyIndex = 0;
+                                wrongStudyAnswers = 0;
+                                //done with a pass
+                                //scramble
+                            }
                         }
                     }
-                    for(CardTable cT : reviewCardList) {
-                        if (cT.getIndexKey() == tempCard.getIndexKey()) {
-                            cT.setDays(tempCard.getDays());
-                            cT.setStreak(tempCard.getStreak());
-                        }
+                    if (studyPasses < 2) {
+                        koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
+                    } else if (studyPasses < 4) {
+                        koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
+                    } else {
+                        koreanWordButton.setText("♪♫♪");
                     }
-                    Log.d(DEBUG_TAG, "Tempcard after: " + tempCard.getForeignWord() + ", days-" + tempCard.getDays() + ", streak-" + tempCard.getStreak());
-                    checkDeckStatus();
-                    if (newCards.size() > 0 || reviewCardList.size() > 0) {
-                        tempCard = updatedNextCard();
-                        nextRound();
-                        showAnswerButton.setText("?");
+                    if (reviewIndex < reviewCardList.size()) {
+                        studyModeText.setText("Reviewing: " + (reviewCardList.size() - reviewIndex) + " cards left.");
+                    } else if (studyPasses < 1) {
+                        studyModeText.setText("Learning Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    } else if (studyPasses < 3) {
+                        studyModeText.setText("Reading Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    } else if (studyPasses < 5) {
+                        studyModeText.setText("Memory Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    } else {
+                        studyModeText.setText("Hearing Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
                     }
+                    showAnswerButton.setText("?");
+                    correctAnswerButton.setClickable(false);
+                    wrongAnswerButton.setClickable(false);
                 }
             });
             correctAnswerButton.setClickable(false);
             wrongAnswerButton.setClickable(false);
-//            tempCard = updatedNextCard();
         } else if(session==2) {
             //dictionary screen
             setContentView(R.layout.dictionary_layout);
@@ -588,7 +698,31 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             setContentView(R.layout.settings_layout);
             constraintLayout=(ConstraintLayout)findViewById(R.id.settingLayout);
             chooseBackground(backgroundID);
-
+            builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogTheme);
+            builder.setTitle("Words Per Day");
+            builder.setPositiveButton("Tomorrow", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    //change the new variable tomorrowCardsPerDay
+                    tomorrowCardsPerDay = cardsPerDay;
+                    editor.putInt(TOMORROW_CARDS_PER_DAY_ID, tomorrowCardsPerDay);
+                    cardsPerDay = oldCardsPerDay;
+                }
+            });
+            builder.setNeutralButton("Back", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    //return
+                }
+            });
+            builder.setNegativeButton("Today", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    //
+//                    newCards.clear();
+                    updateModifyDeck();
+                }
+            });
             pickTime = (Button)findViewById(R.id.pick_time);
             settingText = (TextView)findViewById(R.id.settingText);
             cardsPerDayText = (EditText)findViewById(R.id.cardsPerDay);
@@ -636,23 +770,35 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                         if(tempString.length() == 0) {
                             tempString = "1";
                         }
-//                        oldCardsPerDay = cardsPerDay;
+                        oldCardsPerDay = cardsPerDay;
                         cardsPerDay = Integer.parseInt(tempString);
                         if(cardsPerDay <= 0) {
                             cardsPerDay=1;
                         } else if(cardsPerDay > allCardList.size()) {
                             cardsPerDay = allCardList.size();
                         }
-                        Log.d(DEBUG_TAG, "New cardsPerDay: " + Integer.toString(cardsPerDay));
+                        cardsPerDayText.clearFocus();
+                        if(!dayDone && !studyStarted) {
+                            //new day hasn't started yet
+                            updateModifyDeck();
+                        } else if(!dayDone) {
+                            //mid studying, ask if they want to restart or apply for tomorrow
+                            builder.setMessage("Would you like to restart today or apply this tomorrow?");
+                            final AlertDialog dialog = builder.create();
+                            dialog.show();
+                        } else if(dayDone) {
+                            //day is done
+                            builder.setMessage("Would you like to study new words today or apply this tomorrow?");
+                            final AlertDialog dialog = builder.create();
+                            dialog.show();
+                        }
                         editor.putInt(CARDS_PER_DAY_KEY, cardsPerDay);
                         editor.apply();
-//                        loadNewCards();
-                        updateModifyDeck();
-                        cardsPerDayText.clearFocus();
+                        Log.d(DEBUG_TAG, "InitialNewCardList Size: " + initialNewCardList.size());
                         return true;
                     }
-                    updateModifyDeck();
-                    cardsPerDayText.clearFocus();
+//                    updateModifyDeck();
+//                    cardsPerDayText.clearFocus();
                     return false;
                 }
             });
@@ -861,137 +1007,170 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                 }
             });
         } else if(session==10) {
-
             setContentView(R.layout.conjugation_layout);
-            constraintLayout=(ConstraintLayout)findViewById(R.id.conjugation_layout);
+            constraintLayout = (ConstraintLayout) findViewById(R.id.conjugation_layout);
             chooseBackground(backgroundID);
 
-            baseVerb = findViewById(R.id.BaseVerb);
-            pastButton = findViewById(R.id.PastButton);
-            continuousButton = findViewById(R.id.ContinuousButton);
-            perfectButton = findViewById(R.id.PerfectButton);
-            conjugationCorrect = findViewById(R.id.CorrectAnswerButton);
-            conjugationWrong = findViewById(R.id.WrongAnswerButton);
-            modeTextView = findViewById(R.id.ModeTextView);
+            conjugationCorrectAnswerButton = findViewById(R.id.ConjugationCorrectAnswerButton);
+            conjugationWrongAnswerButton = findViewById(R.id.ConjugationWrongAnswerButton);
+            conjugationShowAnswerButton = findViewById(R.id.ConjugationShowAnswerButton);
+            conjugationUndoButton = findViewById(R.id.ConjugationUndoButton);
 
-            baseVerb.setText(finishedVerbs.get(conjugationIndex).getForeignWord());
-            modeTextView.setText("Incorrect Answers: " + wrongConjugationAnswers);
-            pastButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(pastButton.getText().equals("_")) {
-                        pastButton.setClickable(false);
-                        continuousButton.setClickable(false);
-                        perfectButton.setClickable(false);
-                        conjugationCorrect.setClickable(true);
-                        conjugationWrong.setClickable(true);
-                        Log.d(DEBUG_TAG, finishedVerbs.get(0).getIndexKey() + finishedVerbs.get(0).getPastTense());
-                        Log.d(DEBUG_TAG, finishedVerbs.get(conjugationIndex).getPastTense());
-                        pastButton.setText(finishedVerbs.get(conjugationIndex).getPastTense());
-                    }
-                }
-            });
-            continuousButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(continuousButton.getText().equals("_")) {
-                        pastButton.setClickable(false);
-                        continuousButton.setClickable(false);
-                        perfectButton.setClickable(false);
-                        conjugationCorrect.setClickable(true);
-                        conjugationWrong.setClickable(true);
-                        Log.d(DEBUG_TAG, finishedVerbs.get(conjugationIndex).getContinuousTense());
-                        continuousButton.setText(finishedVerbs.get(conjugationIndex).getContinuousTense());
-                    }
-                }
-            });
-            perfectButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(perfectButton.getText().equals("_")) {
-                        pastButton.setClickable(false);
-                        continuousButton.setClickable(false);
-                        perfectButton.setClickable(false);
-                        conjugationCorrect.setClickable(true);
-                        conjugationWrong.setClickable(true);
-                        Log.d(DEBUG_TAG, finishedVerbs.get(conjugationIndex).getPerfectContinuous());
-                        perfectButton.setText(finishedVerbs.get(conjugationIndex).getPerfectContinuous());
-                    }
-                }
-            });
-            conjugationCorrect.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    pastButton.setClickable(true);
-                    continuousButton.setClickable(true);
-                    perfectButton.setClickable(true);
-                    conjugationCorrect.setClickable(false);
-                    conjugationWrong.setClickable(false);
-                    conjugationAnswers = conjugationAnswers + 1;
-                    if(conjugationAnswers==3) {
-                        conjugationIndex = conjugationIndex + 1;
-                            if(conjugationIndex == finishedVerbs.size()) {
-                                if(wrongConjugationAnswers < 1) {
-                                    conjugationPasses = conjugationPasses + 1;
-                                }
-                                if(conjugationPasses==2) {
-                                    //done
-                                    conjugationPasses  = 0;
-                                    updatedChangeLayout(0);
-                                }
-                                conjugationIndex = 0;
-                                conjugationAnswers = 0;
-                                wrongConjugationAnswers = 0;
-                                Collections.shuffle(finishedVerbs);
-                                baseVerb.setText(finishedVerbs.get(conjugationIndex).getForeignWord());
-                                //todo avoid putting the last one front
+            conjugationKoreanWordText = findViewById(R.id.ConjugationKoreanWordText);
+            conjugationModeTextView = findViewById(R.id.ConjugationModeTextView);
 
-
-                            }
-                        baseVerb.setText(finishedVerbs.get(conjugationIndex).getForeignWord());
-                        pastButton.setText("_");
-                        continuousButton.setText("_");
-                        perfectButton.setText("_");
-                        conjugationAnswers = 0;
-                    }
-                }
-            });
-            conjugationWrong.setOnClickListener(new View.OnClickListener() {
+            conjugationModeTextView.setText("Incorrect Answers: " + conjugationWrongAnswers +"\nPasses: " + conjugationPasses);
+            conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord());
+            conjugationWrongAnswerButton.setClickable(false);
+            conjugationCorrectAnswerButton.setClickable(false);
+            switch(conjugationAnswers) {
+                case 0:
+                    conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nPast Tense");
+                    break;
+                case 1:
+                    conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nContinuous Tense");
+                    break;
+                case 2:
+                    conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nFuture Tense");
+                    break;
+            }
+            conjugationShowAnswerButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    pastButton.setClickable(true);
-                    continuousButton.setClickable(true);
-                    perfectButton.setClickable(true);
-                    conjugationCorrect.setClickable(false);
-                    conjugationWrong.setClickable(false);
-                    conjugationAnswers = conjugationAnswers + 1;
-                    wrongConjugationAnswers = wrongConjugationAnswers + 1;
-                    modeTextView.setText("Incorrect Answers: " + wrongConjugationAnswers);
-                    if(conjugationAnswers==3) {
-                        conjugationIndex = conjugationIndex + 1;
-                        if(conjugationIndex == finishedVerbs.size()) {
-                            if(wrongConjugationAnswers < 1) {
-                                conjugationPasses = conjugationPasses + 1;
-                            }
-                            if(conjugationPasses==2) {
-                                //done
-                                conjugationPasses  = 0;
-                                updatedChangeLayout(0);
-                            }
-                            conjugationIndex = 0;
+                    switch(conjugationAnswers) {
+                        case 0:
+                            conjugationShowAnswerButton.setText(finishedVerbs.get(conjugationIndex).getPastTense());
+                            break;
+                        case 1:
+                            conjugationShowAnswerButton.setText(finishedVerbs.get(conjugationIndex).getContinuousTense());
+                            break;
+                        case 2:
+                            conjugationShowAnswerButton.setText(finishedVerbs.get(conjugationIndex).getPerfectContinuous());
+                            break;
+                    }
+                    conjugationShowAnswerButton.setClickable(false);
+                    conjugationWrongAnswerButton.setClickable(true);
+                    conjugationCorrectAnswerButton.setClickable(true);
+                }
+            });
+            conjugationCorrectAnswerButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    conjugationHistory.push(1);
+                    conjugationAnswers += 1;
+                    switch(conjugationAnswers) {
+                        case 0:
+                            conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nPast Tense");
+                            break;
+                        case 1:
+                            conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nContinuous Tense");
+                            break;
+                        case 2:
+                            conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nFuture Tense");
+                            break;
+                        case 3:
+                            //word is done, iterate
                             conjugationAnswers = 0;
-                            wrongConjugationAnswers = 0;
-                            Collections.shuffle(finishedVerbs);
-                            baseVerb.setText(finishedVerbs.get(conjugationIndex).getForeignWord());
-                            //todo avoid putting the last one front or use a timer
-                            //pass done and scramble
-
+                            conjugationIndex += 1;
+                            if(conjugationIndex == finishedVerbs.size()) {
+                                //list is done, iterate the pass an start anew
+                                conjugationIndex = 0;
+                                if(conjugationWrongAnswers == 0) {
+                                    conjugationPasses += 1;
+                                    if(conjugationPasses == 2){
+                                        conjugationIndex = 0;
+                                        conjugationAnswers = 0;
+                                        conjugationPasses = 0;
+                                        conjugationWrongAnswers = 0;
+                                        conjugationHistory.clear();
+                                        finishedVerbs.clear();
+                                        updatedChangeLayout(0);
+                                        break;
+                                    }
+                                }
+                                conjugationWrongAnswers = 0;
+                                conjugationHistory.clear();
+                            }
+                            conjugationModeTextView.setText("Incorrect Answers: " + conjugationWrongAnswers +"\nPasses: " + conjugationPasses);
+                            conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nPast Tense");
+                    }
+                    conjugationShowAnswerButton.setClickable(true);
+                    conjugationShowAnswerButton.setText("?");
+                    conjugationWrongAnswerButton.setClickable(false);
+                    conjugationCorrectAnswerButton.setClickable(false);
+                }
+            });
+            conjugationWrongAnswerButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    conjugationHistory.push(-1);
+                    conjugationWrongAnswers += 1;
+                    conjugationAnswers += 1;
+                    conjugationModeTextView.setText("Incorrect Answers: " + conjugationWrongAnswers +"\nPasses: " + conjugationPasses);
+                    switch(conjugationAnswers) {
+                        case 0:
+                            conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nPast Tense");
+                            break;
+                        case 1:
+                            conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nContinuous Tense");
+                            break;
+                        case 2:
+                            conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nFuture Tense");
+                            break;
+                        case 3:
+                            //word is done, iterate
+                            conjugationAnswers = 0;
+                            conjugationIndex += 1;
+                            if(conjugationIndex == finishedVerbs.size()) {
+                                //list is done
+                                conjugationIndex = 0;
+                                conjugationWrongAnswers = 0;
+                                conjugationHistory.clear();
+                            }
+                            conjugationModeTextView.setText("Incorrect Answers: " + conjugationWrongAnswers +"\nPasses: " + conjugationPasses);
+                            conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nPast Tense");
+                    }
+                    conjugationShowAnswerButton.setClickable(true);
+                    conjugationShowAnswerButton.setText("?");
+                    conjugationWrongAnswerButton.setClickable(false);
+                    conjugationCorrectAnswerButton.setClickable(false);
+                }
+            });
+            conjugationUndoButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (conjugationHistory.size() > 0) {
+                        conjugationAnswers -= 1;
+                        conjugationShowAnswerButton.setText("?");
+                        switch(conjugationAnswers) {
+                            case -1:
+                                //decrement to previous word
+                                if(conjugationIndex > 0) {
+                                    conjugationIndex -= 1;
+                                    conjugationAnswers = 3;
+                                    conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nPast Tense");
+                                }
+                                break;
+                            case 0:
+                                conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nPast Tense");
+                                break;
+                            case 1:
+                                conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nContinuous Tense");
+                                break;
+                            case 2:
+                                conjugationKoreanWordText.setText(finishedVerbs.get(conjugationIndex).getForeignWord() + "\nFuture Tense");
+                                break;
                         }
-                        baseVerb.setText(finishedVerbs.get(conjugationIndex).getForeignWord());
-                        pastButton.setText("_");
-                        continuousButton.setText("_");
-                        perfectButton.setText("_");
-                        conjugationAnswers = 0;
+                        switch (conjugationHistory.pop()) {
+                            case (1):
+                                //undoing a correct answer
+                                break;
+                            case (-1):
+                                conjugationWrongAnswers -= 1;
+                                conjugationModeTextView.setText("Incorrect Answers: " + conjugationWrongAnswers +"\nPasses: " + conjugationPasses);
+                                //undoing a wrong answer
+                                break;
+                        }
                     }
                 }
             });
@@ -1114,7 +1293,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 //            dayDone = true;
             Log.d(DEBUG_TAG, finishedWords);
             String[] finishedWordsArray = finishedWords.split(",");
-            Log.d(DEBUG_TAG, "FinishedWordsArray: " + finishedWordsArray);
+            Log.d(DEBUG_TAG, "FinishedWordsArray Size: " + finishedWordsArray.length);
             for(String tempString : finishedWordsArray) {
                 Log.d(DEBUG_TAG, tempString);
 //                newCards.add(MainActivity.cardDatabase.cardDao().getCard(Integer.parseInt(tempString)));
@@ -1126,7 +1305,8 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         if(!sharedPrefs.contains(INDEX_KEY)) {
             timeStudied = 0;
             index = 0;
-            cardsPerDay = 20;
+            cardsPerDay = 10;
+            tomorrowCardsPerDay = 0;
             wordsFinishedToday = 0;
             newDayMilliExtra = 0L;
             backgroundID = 7;
@@ -1142,6 +1322,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             editor.putInt(WORDS_FINISHED_TODAY, wordsFinishedToday);
             editor.putInt(INDEX_KEY, index);
             editor.putInt(CARDS_PER_DAY_KEY, cardsPerDay);
+            editor.putInt(TOMORROW_CARDS_PER_DAY_ID, tomorrowCardsPerDay);
             editor.putLong(NEW_DAY_MILLI_KEY, newDayMilli);
             editor.putLong(NEW_DAY_MILLI_EXTRA_KEY, newDayMilliExtra);
             editor.putInt(TIME_STUDIED, timeStudied);
@@ -1155,6 +1336,15 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             wordsFinishedToday = sharedPrefs.getInt(WORDS_FINISHED_TODAY, wordsFinishedToday);
             index = sharedPrefs.getInt(INDEX_KEY, index);
             cardsPerDay = sharedPrefs.getInt(CARDS_PER_DAY_KEY, cardsPerDay);
+            tomorrowCardsPerDay = sharedPrefs.getInt(TOMORROW_CARDS_PER_DAY_ID, tomorrowCardsPerDay);
+            if(tomorrowCardsPerDay > 1) {
+                cardsPerDay = tomorrowCardsPerDay;
+                tomorrowCardsPerDay = 0;
+
+                editor.putInt(CARDS_PER_DAY_KEY, cardsPerDay);
+                editor.putInt(TOMORROW_CARDS_PER_DAY_ID, tomorrowCardsPerDay);
+                editor.apply();
+            }
 //            oldCardsPerDay = cardsPerDay;
             newDayMilli = sharedPrefs.getLong(NEW_DAY_MILLI_KEY, newDayMilli);
             reminderMilli = sharedPrefs.getLong(REMINDER_MILLI_KEY, reminderMilli);
@@ -1199,11 +1389,32 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         Log.d(DEBUG_TAG, "wordsFinishedToday - " + wordsFinishedToday);
         hideKeyboard(this);
         //cardsperday already changed at this point
+
+//        if(!dayDone) {
+//            newCards.clear();
+//            reviewCardList.clear();
+//            updatedInitialTasks();
+//            //should refill the values as if it's a new day
+//            //should handle an increase or decrease since all words are finished at once
+//            //no "partial" completes
+//        } else {
+//            //day is done
+//            //if less words then it'll automatically add to the next day
+//            if(cardsPerDay < oldCardsPerDay) {
+//
+//            } else {
+//                dayDone = false;
+//                updatedLoadNewCards();
+//            }
+//            //else add some words
+//        }
+//
+//
         if(cardsPerDay > oldCardsPerDay) {
             if(dayDone) {
                 dayDone = false;
-                newCards.clear();
-                reviewCardList.clear();
+//                newCards.clear();
+//                reviewCardList.clear();
 //                initialReviewList.clear();
 //                initialNewCardList.clear();
             }
@@ -1230,8 +1441,10 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             for (CardTable cT : cardsToAddTemp) {
                 cT.setTime(0L);
                 newCards.add(cT);
+                initialNewCardList.add(cT);
             }
-            addCardsToDecks(cardsToAddTemp);
+            //todo add in old cards? Only if the day is done so newwords is empty
+//            addCardsToDecks(cardsToAddTemp);
         }
         oldCardsPerDay = cardsPerDay;
     }
@@ -1247,6 +1460,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                     tempIndex = cT.getIndexKey();
                 }
             }
+            //this following might be bad
             for(CardTable cT: reviewCardList) {
                 if(cT.getIndexKey() > tempIndex && !cardsToRemove.contains(cT.getIndexKey())) {
                     tempIndex = cT.getIndexKey();
@@ -1271,8 +1485,15 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                     break;
                 }
             }
+            for(int j = 0; j < initialNewCardList.size(); j++) {
+                if(initialNewCardList.get(j).getIndexKey() == i) {
+                    initialNewCardList.remove(j);
+                    break;
+                }
+            }
+            Log.d(DEBUG_TAG, "initialNewCardList size: " + Integer.toString(initialNewCardList.size()));
         }
-        removeCardsFromDeck(cardsToRemove);
+//        removeCardsFromDeck(cardsToRemove);
         checkDeckStatus();
     }
 
@@ -1299,273 +1520,43 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         }
     }
     public void undoButtonPressed() {
-        if(!tempCardHistory.empty()) {
-            tempCard = tempCardHistory.pop();
-            Log.d(DEBUG_TAG, "Tempcard days: " + tempCard.getDays() + ", streak: " + tempCard.getStreak());
-            //was the card removed at this point?
-            boolean tempFound = false;
-            for(CardTable cT : newCards) {
-                if(tempCard.getIndexKey() == cT.getIndexKey()) {
-                    tempFound = true;
-                }
-            }
-            for(CardTable cT : reviewCardList) {
-                if(tempCard.getIndexKey() == cT.getIndexKey()) {
-                    tempFound = true;
-                }
-            }
-
-            if(!tempFound) {
-                //card missing, need to undo the write with the copy
-                for(CardTable cT : initialNewCardList) {
-                    if(cT.getIndexKey() == tempCard.getIndexKey() && !dayDone) {
-                        MainActivity.cardDatabase.cardDao().updateCard(cT);
-                    }
-                }
-                for(CardTable cT : initialReviewList) {
-                    if(cT.getIndexKey() == tempCard.getIndexKey() && !dayDone) {
-                        MainActivity.cardDatabase.cardDao().updateCard(cT);
-                    }
-                }
-            }
-
-            newCards = newCardHistory.pop();
-            reviewCardList = reviewCardHistory.pop();
-            for(CardTable cT : newCards) {
-                if(cT.getIndexKey() == tempCard.getIndexKey()) {
-                    cT.setDays(tempCard.getDays());
-                    cT.setStreak(tempCard.getStreak());
-                }
-            }
-            for(CardTable cT : reviewCardList) {
-                if (cT.getIndexKey() == tempCard.getIndexKey()) {
-                    cT.setDays(tempCard.getDays());
-                    cT.setStreak(tempCard.getStreak());
-                }
-            }
-            //if in study mode check put back in newcards
-            //check to see if anything changes at the time of assignment or if tempcard can just change
-        }
 
     }
     public void updatedCardAnswer(boolean result) {
-        //only method to change the card data
-        Log.d(DEBUG_TAG, "Tempcard before: " + tempCard.getForeignWord() + ", days-" + tempCard.getDays() + ", streak-" + tempCard.getStreak());
-        tempCardHistory.push(tempCard.createCopy());
-        ArrayList<CardTable> newCardsCopy = new ArrayList<>();
-        for(CardTable cT: newCards) {
-            newCardsCopy.add(cT.createCopy());
-        }
-        newCardHistory.push(newCardsCopy);
-        ArrayList<CardTable> reviewCardListCopy = new ArrayList<>();
-        for(CardTable cT: reviewCardList) {
-            reviewCardListCopy.add(cT.createCopy());
-        }
-        reviewCardHistory.push(reviewCardListCopy);
 
-        if(result) {
-            //correct answer
-            Log.d(DEBUG_TAG, "Time value: " + Long.toString(tempCard.getTime()));
-            if(tempCard.getTime()!=0) {
-                //review card answered correctly. Increase streak, calculate new factor, days, time and then enter it into the database
-                Log.d(DEBUG_TAG, "Writing card to database");
-                cardDone(tempCard, 4.0);
-                if(reviewCardList.size()>0) {
-                    reviewCardList.remove(0);
-                }
-            } else if(studyReviewMode==true) {
-                //correct answer by a study review session
-                tempCard.setDays(0);
-                tempCard.setStreak((short)0);
-//                newCards.remove(tempCard);
-                reviewCardList.remove(0);
-                Log.d(DEBUG_TAG, "Writing card to database");
-                cardDone(tempCard, 4.0);
-            } else {
-                for(CardTable cT : newCards) {
-                    if(cT.getStreak()!=0 && cT.getStreak()!=6) {
-                        cT.setDays(cT.getDays() - 1);
-                    }
-//                    Log.d(DEBUG_TAG, cT.getForeignWord() + "\tDays: " + cT.getDays() + "\tStreak: " + cT.getStreak());
-                }
-                Log.d(DEBUG_TAG, "Changeing tempcard before: " + tempCard.getForeignWord() + ", days-" + tempCard.getDays() + ", streak-" + tempCard.getStreak());
-                if(tempCard.getStreak() < 6) {
-                    tempCard.setStreak(tempCard.getStreak() + 1);
-                }
-                tempCard.setDays(gapMap[tempCard.getStreak()-1]);
-                Log.d(DEBUG_TAG, "Changeing tempcard after: " + tempCard.getForeignWord() + ", days-" + tempCard.getDays() + ", streak-" + tempCard.getStreak());
-            }
-        } else {
-            for(CardTable cT : newCards) {
-                if(studyReviewMode==false && cT.getStreak()!=0 && cT.getStreak()!=6) {
-                    cT.setDays(cT.getDays() - 1);
-                }
-            }
-            if(tempCard.getTime()!=0) {
-                Log.d(DEBUG_TAG, "InitialReview card because time is: " + Long.toString(tempCard.getTime()));
-                //review card failed, move it to the study list and reset the days and streak. Do not touch the factor
-                tempCard.setTime(0L);
-                tempCard.setStreak((short) 0);
-                tempCard.setDays(0);
-                tempCard.setFactor(calEasinessFactor(tempCard.getFactor(), 0.0));
-                newCards.add(tempCard);
-                reviewCardList.remove(0);
-                //todo change factor here by calculating difficulty
-            }else if (studyReviewMode==true){
-                tempCard.setStreak((short)3);
-                tempCard.setDays(0);
-                //review method failed
-                reviewCardList.remove(0);
-                newCards.add(tempCard);
-            } else {
-                //study card failed, decrease the streak by 1 and reset the days
-                if(tempCard.getStreak()!=0) {
-//                    short tempShort = tempCard.getStreak();
-//                    tempShort-=1;
-//                    tempCard.setStreak(tempShort);
-                    tempCard.setStreak(tempCard.getStreak() - 1);
-                    tempCard.setDays(gapMap[tempCard.getStreak()]);
-                } else {
-                    tempCard.setDays(0);
-                }
-            }
-        }
     }
     public CardTable updatedNextCard() {
-        if(reviewCardList.size()>0 && studyReviewMode==false) {
-            Log.d(DEBUG_TAG, "returning new reviewCard");
-            //still cards to review
-            return reviewCardList.get(0);
-        } else {
-            if(studyReviewMode==true) {
-                //every time this method is called the value studyreviewmode will be safe
-                //it will be set in a check deck status method
-//                int temptInt = studyReviewMode;
-//                studyReviewMode+=1; //using this temp variable so we can change the value of studyReviewMode before the return
-//                return newCards.get(temptInt);
-                return reviewCardList.get(0);
-            } else {
-                //get the card most due, based on the lowest days value and for equal values choose the high streak`
-                int tempIndex = -1;
-                int tempStreak = -1; //this okay? todo
-                int tempDays = Integer.MAX_VALUE;
-                for(int i = 0; i<newCards.size();i++) {
-                    if(newCards.get(i).getDays() <= tempDays) {
-                        //card is due, and if another card is due because it's already been found, that means this one is more due
-                        tempIndex = i;
-                        tempStreak = newCards.get(i).getStreak();
-                        tempDays = newCards.get(i).getDays();
-                    } else if(newCards.get(i).getDays() == tempDays && newCards.get(i).getStreak() < tempStreak){
-                        //in the case of two cards being overdue, choose the one with the lower streak value so they can catch up
-                        tempIndex = i;
-                        tempStreak = newCards.get(i).getStreak();
-                        tempDays = newCards.get(i).getDays();
-                    }
-                }
-                if(tempDays <0) {
-                    //card due was found, return it
-                    return newCards.get(tempIndex);
-                } else {
-                    //no new card, return new one
-                    for(CardTable cT : newCards) {
-                        if(cT.getStreak()==0) {
-                            return cT;
-                        }
-                    }
-                    //no new cards, return closest card
-                    return newCards.get(tempIndex);
-
-                    //no card is actually due, get a new one with the value of int max
-                }
-            }
-        }
+        return tempCard;
     }
     public void checkDeckStatus() {
-        if(studyReviewMode==true && newCards.size()==0) {
-            if(reviewCardList.size()==0) {
-                studyReviewMode=false;
-                if(newCards.size()==0) {
-                    Log.d(DEBUG_TAG, "Changing dayDone to true");
-                    dayDone = true;
-                    editor.putBoolean(DAYDONE_ID, dayDone);
-                    editor.apply();
-//                        loadNewCards();
-                    updateModifyDeck();
-                    if(cardsPerDayText != null) {
-                        cardsPerDayText.clearFocus();
-                    }
-//                    initialNewCardList.clear();
-//                    initialReviewList.clear();
-                    Log.d(DEBUG_TAG, finishedWords);
-                    String[] finishedWordsArray = finishedWords.split(",");
-                    Log.d(DEBUG_TAG, "FinishedWordsArray: " + finishedWordsArray);
-                    for(String tempString : finishedWordsArray) {
-                        Log.d(DEBUG_TAG, tempString);
-                        newCards.add(MainActivity.cardDatabase.cardDao().getCard(Integer.parseInt(tempString)));
-                    }
-                    updatedChangeLayout(0);
-                    //todo set up review here
-                    //set flag
-                    //add finished words back to newlist
-                    //cards finsished have their respective ID's stored in shared preference string
-                    //review
-                }
-            }
-        } else {
-            if(studyReviewMode==true && reviewCardList.size()==0) {
-                studyReviewMode=false;
-            }
-            boolean startTimer = true;
-            for (CardTable ct : newCards) {
-                if (ct.getStreak() < 6) { //not done reviewing
-                    startTimer = false;
-                }
-            }
-            if (startTimer) {
-                studyReviewMode = true; //reviewmode will start automatically when timer ends
-                reviewCardList = new ArrayList<>(newCards);
-                newCards.clear();
-                startStudyTimer(6000, 1000);
-                updatedChangeLayout(4);
-            } else {
-                if(waitingTimer) {
-                    countDownTimer.cancel();
-                    countDownTimer.onFinish();
-                    studyReviewMode=false;
-                    for(int i=0; i < reviewCardList.size(); i++) {
-                        newCards.add(reviewCardList.get(i));
-                    }
-                    reviewCardList.clear();
-                }
-            }
-        }
+
     }
-    public void cardDone(CardTable cardTable, double answerQuality) {
+    public void cardDone(CardTable cardTable, double answerQuality) { //todo doesn't this undo messed up review cards?
         if(!dayDone) {
-            int tempStreak = 0;
-            int tempDays = 0;
-            for (CardTable cT : initialNewCardList) {
-                if (cT.getIndexKey() == cardTable.getIndexKey()) {
-                    tempStreak = cT.getStreak();
-                    tempDays = cT.getDays();
-                }
-            }
-            for (CardTable cT : initialReviewList) {
-                if (cT.getIndexKey() == cardTable.getIndexKey()) {
-                    tempStreak = cT.getStreak();
-                    tempDays = cT.getDays();
-                }
-            }
+//            int tempStreak = 0;
+//            int tempDays = 0;
+//            for (CardTable cT : initialNewCardList) {
+//                if (cT.getIndexKey() == cardTable.getIndexKey()) {
+//                    tempStreak = cT.getStreak();
+//                    tempDays = cT.getDays();
+//                }
+//            }
+//            for (CardTable cT : initialReviewList) {
+//                if (cT.getIndexKey() == cardTable.getIndexKey()) {
+//                    tempStreak = cT.getStreak();
+//                    tempDays = cT.getDays();
+//                }
+//            }
             if(finishedWords.length()==0) {
                 finishedWords = Integer.toString(cardTable.getIndexKey());
             } else {
                 finishedWords = finishedWords + "," + Integer.toString(cardTable.getIndexKey());
             }
-            Log.d(DEBUG_TAG, finishedWords);
+            Log.d(DEBUG_TAG, "finished words: " + finishedWords);
 
-            cardTable.setStreak(tempStreak + 1);
+            cardTable.setStreak(cardTable.getStreak() + 1);
             cardTable.setFactor(calEasinessFactor(cardTable.getFactor(), answerQuality)); //probably wrong
-            cardTable.setDays(calRepetitionInterval(tempDays, cardTable.getFactor()));
+            cardTable.setDays(calRepetitionInterval(cardTable.getDays(), cardTable.getFactor()));
             cardTable.setTime(newDayMilli + ((86400000) * (cardTable.getDays() - 1)));
             MainActivity.cardDatabase.cardDao().updateCard(cardTable);
             wordsFinishedToday += 1;
@@ -1598,6 +1589,15 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                 nextRound();
             }
         }.start();
+    }
+    public void undoCardWrite(CardTable undoCard) {
+        //when a card was written to the database and needs to be undone
+        //todo it will only be review cards
+        for (CardTable cT : initialReviewList) {
+            if (cT.getIndexKey() == undoCard.getIndexKey()) {
+                MainActivity.cardDatabase.cardDao().updateCard(cT);
+            }
+        }
     }
     public void checkDatabase() {
         //temporary method for debugging to see the values in the database
@@ -1941,5 +1941,48 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                 break;
         }
     }
+    public class NeoStack{
+        public ArrayList<CardTable> cards;
+        public NeoStack(ArrayList<CardTable> cards) {
+            this.cards = cards;
+        }
+        public void push(int index, CardTable cT) {
+            if(index == 4) {
+               this.cards.add(cards.size() - 1, cT);
+            } else {
+                if(index >= this.cards.size()) {
+                    this.cards.add(cT);
+                } else {
+                    this.cards.add(index, cT);
+                }
+            }
+        }
+        public CardTable pop() {
+            return this.cards.remove(0);
+        }
+        public CardTable peak() {
+            return this.cards.get(0);
+        }
+        public boolean checkStatus() {
+            for(CardTable cT : this.cards) {
+                if(cT.getStreak() < 4) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public void studyUndo(int answer, int index) {
+            for(int i = 0; i < this.cards.size(); i++) {
+                if(this.cards.get(i).getIndexKey() == index) {
+                    this.cards.get(i).setStreak(this.cards.get(i).getStreak() + answer);
+                    this.cards.add(0, this.cards.remove(i));
+                    break;
+                }
+            }
+        }
+    }
+    public void cardsPerDayChoice() {
 
+    }
 }
+

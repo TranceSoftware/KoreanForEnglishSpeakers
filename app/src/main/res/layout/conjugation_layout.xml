@@ -10,7 +10,7 @@
     android:id="@+id/conjugation_layout">
 
     <Button
-        android:id="@+id/CorrectAnswerButton"
+        android:id="@+id/ConjugationCorrectAnswerButton"
         style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/WrongAnswerButton"
+        android:id="@+id/ConjugationWrongAnswerButton"
         style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -37,148 +37,108 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-
-    <TextView
-        android:id="@+id/BaseVerb"
+    <Button
+        android:id="@+id/ConjugationShowAnswerButton"
+        style="@style/ButtonBorder.Accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginBottom="8dp"
-        android:gravity="center_horizontal"
-        android:paddingHorizontal="10dp"
-        android:text="{Korean-Text}"
-        android:textColor="@color/Black"
-        android:textSize="30dp"
+        android:layout_marginBottom="136dp"
+        android:text="?"
+        android:textSize="20dp"
         android:visibility="visible"
-        app:layout_constraintBottom_toTopOf="@+id/invisibleButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/ConjugationWrongAnswerButton"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toEndOf="@+id/ConjugationCorrectAnswerButton" />
+
 
     <TextView
-        android:id="@+id/ModeTextView"
+        android:id="@+id/ConjugationTimerText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
         android:layout_marginBottom="8dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Not Set"
+        android:gravity="center"
+        android:textSize="75dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/ConjugationKoreanWordText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="{Korean-Text}"
+        android:paddingHorizontal="10dp"
+        android:textColor="@color/Black"
+        android:textSize="35dp"
+        android:visibility="visible"
+        android:gravity="center_horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/ConjugationShowAnswerButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ConjugationModeTextView" />
+
+    <Button
+        android:id="@+id/ConjugationUndoButton"
+        style="@style/ButtonBorder.Accent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:text="Undo"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/ConjugationModeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
         android:text="{StudyMode}"
         android:textColor="@color/Black"
         android:textSize="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/BaseVerb"
-        app:layout_constraintEnd_toEndOf="@+id/BaseVerb"
-        app:layout_constraintHorizontal_bias="0.491"
-        app:layout_constraintStart_toStartOf="@+id/BaseVerb"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
-    <Button
-        android:id="@+id/PastButton"
-        style="@style/ButtonBorder.Accent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:text="_"
-        android:paddingHorizontal="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintEnd_toEndOf="@+id/ConjugationUndoButton"
+        app:layout_constraintStart_toStartOf="@+id/ConjugationUndoButton"
+        app:layout_constraintTop_toBottomOf="@+id/ConjugationUndoButton" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/waitingText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="Past"
-        android:textSize="20dp"
-        android:textColor="@color/Black"
+        android:layout_marginBottom="64dp"
+        android:text="Consolidating Memory"
+        android:visibility="gone"
+        android:textSize="25dp"
+        app:layout_constraintBottom_toTopOf="@+id/TimerText"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/invisibleButton" />
-
-    <Button
-        android:id="@+id/invisibleButton"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="150dp"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:text="Continuous"
-        android:textSize="20dp"
-        android:textColor="@color/Black"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/PastButton" />
-
-    <Button
-        android:id="@+id/ContinuousButton"
-        style="@style/ButtonBorder.Accent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:text="_"
-        android:paddingHorizontal="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:text="Perfect"
-        android:textSize="20dp"
-        android:textColor="@color/Black"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ContinuousButton" />
-
-    <Button
-        android:id="@+id/PerfectButton"
-        style="@style/ButtonBorder.Accent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:text="_"
-        android:paddingHorizontal="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

@@ -33,7 +33,7 @@
         <shape android:shape="rectangle">
             <corners android:radius="3dp"/>
             <padding android:left="1dp" android:right="1dp" android:top="1dp" android:bottom="1dp"/>
-            <solid android:color="@color/CreamyYellow"/>
+            <solid android:color="@color/CremeYellow"/>
 
         </shape>
     </item>

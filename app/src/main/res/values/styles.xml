@@ -19,9 +19,41 @@
         <item name="colorControlActivated">@color/CremeBlue</item>
         <item name="colorControlHighlight">@color/Green</item>
     </style>
-    <style name="MyTimePickerDialogTheme" parent="@style/Theme.AppCompat.Light.Dialog">
+    <style name="MyTimePickerDialogThemeRed" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/CremeRed</item>
+        <item name="colorAccent">@color/CremeRed</item>
+    </style>
+    <style name="MyTimePickerDialogThemeOrange" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/CremeOrange</item>
+        <item name="colorAccent">@color/CremeOrange</item>
+    </style>
+    <style name="MyTimePickerDialogThemeYellow" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/CremeYellow</item>
+        <item name="colorAccent">@color/CremeYellow</item>
+    </style>
+    <style name="MyTimePickerDialogThemeGreen" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/CremeGreen</item>
+        <item name="colorAccent">@color/CremeGreen</item>
+    </style>
+    <style name="MyTimePickerDialogThemeBlue" parent="@style/Theme.AppCompat.Light.Dialog">
         <item name="android:textColor">@color/CremeBlue</item>
         <item name="colorAccent">@color/CremeBlue</item>
+    </style>
+    <style name="MyTimePickerDialogThemePurple" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/CremePurple</item>
+        <item name="colorAccent">@color/CremePurple</item>
+    </style>
+    <style name="MyTimePickerDialogThemePink" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/CremePink</item>
+        <item name="colorAccent">@color/CremePink</item>
+    </style>
+    <style name="MyTimePickerDialogThemeGrey" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/CremeGrey</item>
+        <item name="colorAccent">@color/CremeGrey</item>
+    </style>
+    <style name="MyTimePickerDialogThemeBlack" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/Black</item>
+        <item name="colorAccent">@color/Black</item>
     </style>
     <style name="ButtonBorder" parent="Widget.AppCompat.Button.Colored"/>
     <style name="ButtonBorder.Accent">

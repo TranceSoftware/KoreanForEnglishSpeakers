@@ -2,10 +2,10 @@
 <resources>
     <color name="colorPrimary">#000000</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="CreamRed">#FF8784</color>
-    <color name="CreamOrange">#FFD1AA</color>
-    <color name="CreamyYellow">#FDFD96</color>
-    <color name="CreamGreen">#BDECB6</color>
+    <color name="CremeRed">#FF8784</color>
+    <color name="CremeOrange">#FFD1AA</color>
+    <color name="CremeYellow">#FDFD96</color>
+    <color name="CremeGreen">#BDECB6</color>
     <color name="CremeBlue">#80CEE1</color>
     <color name="CremePurple">#B19CD9</color>
     <color name="CremePink">#FBCCD1</color>

@@ -92,7 +92,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
     private Button showAnswerButton, wrongAnswerButton, correctAnswerButton, undoButton, reviewButton, conjugationButton;
     private SoundPool soundPool;
     private Button pickTime;
-    private TextView settingText, koreanWordButton, studyModeText, wordsLearnedText, infoText, waitingText, newDayText, wrongAnswerText;
+    private TextView settingText, koreanWordButton, studyModeText, wordsLearnedText, infoText, waitingText, newDayText, streakText, wrongAnswersText, previewText;
     private EditText cardsPerDayText;
 
     private static CardDatabase cardDatabase;
@@ -147,6 +147,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 
     private AlertDialog.Builder builder;
     private boolean studyStarted = false;
+    private boolean reviewStarted = false;
 
 
     @Override
@@ -257,6 +258,8 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         viewID = session;
         Log.d(DEBUG_TAG, "initialNewCardList size: " + Integer.toString(initialNewCardList.size()));
         Log.d(DEBUG_TAG, "initialReviewList size: " + Integer.toString(initialReviewList.size()));
+        Log.d(DEBUG_TAG, "reviewCardSize" + Integer.toString(reviewCardList.size()));
+        Log.d(DEBUG_TAG, newCards + Integer.toString(newCards.size()));
 
         if(session==0) {
             //main screen
@@ -294,6 +297,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 //                    Log.d(DEBUG_TAG, "BundleList size: " + bundleList.size());
 
                             if(!studyStarted) {
+                                wrongStudyAnswers = 0;
                                 if (reviewCardList.isEmpty()) {
                                     neoStack = new NeoStack(newCards);
                                 } else {
@@ -310,29 +314,30 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             conjugationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(DEBUG_TAG, "Day is done: " + dayDone);
-                    if(dayDone) {
-                        if(finishedVerbs.isEmpty()) {
-                            //either starting from scratch or the app was closed
-                            for(CardTable cT: initialNewCardList) {
-                                Log.d(DEBUG_TAG, cT.getPos());
-                                if(cT.getPos().equals("v")) {
-                                    Log.d(DEBUG_TAG, "index - " + cT.getIndexKey() + ", native word - " + cT.getNativeWord() + ", foreign word - " + cT.getForeignWord() + ", pos - " + cT.getPos() + ", factor - " + cT.getFactor() + ", streak - " + cT.getStreak());
-                                    finishedVerbs.add(cT);
-                                }
-                            }
-                            //preview conjugation
-                            conjugationIndex = 0;
-                            conjugationAnswers = 0;
-                            conjugationPasses = 0;
-                            conjugationWrongAnswers = 0;
-                            conjugationHistory = new Stack<>();
-                            updatedChangeLayout(8);
-                        } else {
-                            //just resume
-                            updatedChangeLayout(10);
-                        }
-                    }
+                    logDatabase();
+//                    Log.d(DEBUG_TAG, "Day is done: " + dayDone);
+//                    if(dayDone) {
+//                        if(finishedVerbs.isEmpty()) {
+//                            //either starting from scratch or the app was closed
+//                            for(CardTable cT: initialNewCardList) {
+//                                Log.d(DEBUG_TAG, cT.getPos());
+//                                if(cT.getPos().equals("v")) {
+//                                    Log.d(DEBUG_TAG, "index - " + cT.getIndexKey() + ", native word - " + cT.getNativeWord() + ", foreign word - " + cT.getForeignWord() + ", pos - " + cT.getPos() + ", factor - " + cT.getFactor() + ", streak - " + cT.getStreak());
+//                                    finishedVerbs.add(cT);
+//                                }
+//                            }
+//                            //preview conjugation
+//                            conjugationIndex = 0;
+//                            conjugationAnswers = 0;
+//                            conjugationPasses = 0;
+//                            conjugationWrongAnswers = 0;
+//                            conjugationHistory = new Stack<>();
+//                            updatedChangeLayout(8);
+//                        } else {
+//                            //just resume
+//                            updatedChangeLayout(10);
+//                        }
+//                    }
                 }
             });
             dictionaryButton.setOnClickListener(new View.OnClickListener() {
@@ -348,18 +353,23 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                 }
             });
             wordsLearnedText.setText("Words Learned: " + Integer.toString(MainActivity.cardDatabase.cardDao().getLearnedWords().size()));
+            if(MainActivity.cardDatabase.cardDao().getLearnedWords().size()==100){
+                wordsLearnedText.setText("100 Word Trial Complete!");
+            }
             reviewButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if(dayDone) {
-                        for(CardTable cT : initialNewCardList) {
-                            cT.setTime(0L);
-                            cT.setStreak(0);
-                            cT.setDays(0);
-                            newCards.add(cT);
-                            //todo set defaults
+                        if(!reviewStarted) {
+                            for (CardTable cT : initialNewCardList) {
+                                cT.setTime(0L);
+                                cT.setStreak(0);
+                                cT.setDays(0);
+                                newCards.add(cT);
+                                //todo set defaults
+                            }
                         }
-                        neoStack = new NeoStack(newCards);
+//                        neoStack = new NeoStack(newCards);
                         studyPasses=1;
                         updatedChangeLayout(1);
                     }
@@ -380,12 +390,19 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             correctAnswerButton.setTextColor(this.getResources().getColor(R.color.Green));
             undoButton = findViewById(R.id.UndoButton);
             timerText = findViewById(R.id.TimerText);
+            streakText = findViewById(R.id.streakText);
+            wrongAnswersText = findViewById(R.id.wrongAnswersText);
+            wrongAnswersText.setText("");
             if(reviewIndex < reviewCardList.size()) {
                 koreanWordButton.setText("♪♫♪");
+                streakText.setText("");
             } else {
-                if (studyPasses < 2) {
+                if(reviewIndex < reviewCardList.size()) {
+                    streakText.setText("");
+                    koreanWordButton.setText("♪♫♪");
+                } else if (studyPasses < 2) {
                     koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
-                } else if (studyPasses < 4) {
+                } else if (studyPasses < 3) {
                     koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
                 } else {
                     koreanWordButton.setText("♪♫♪");
@@ -394,39 +411,61 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             koreanWordButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-//                    playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
+                    //todo add review
+                    if(reviewIndex < reviewCardList.size()) {
+                        playSound("a_ko_" + reviewCardList.get(reviewIndex).getForeignWord() + ".mp3");
+                    } else if(studyPasses == 0) {
+                        playSound("a_ko_" + neoStack.peak().getForeignWord() + ".mp3");
+                    } else {
+                        playSound("a_ko_" + newCards.get(studyIndex).getForeignWord() + ".mp3");
+                    }
                 }
             });
+            int tempInt = studyPasses;
             if(reviewIndex < reviewCardList.size()) {
-                studyModeText.setText("Reviewing: " + (reviewCardList.size() - reviewIndex) + " cards left.");
+                studyModeText.setText("Reviewing " + (reviewCardList.size() - reviewIndex) + " cards left.");
             } else if(studyPasses < 1){
-                studyModeText.setText("Learning Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                studyModeText.setText("Learning Phase");
+                playSound("a_ko_" + neoStack.peak().getForeignWord() + ".mp3");
+                streakText.setText("Streak - " + neoStack.peak().getStreak());
+            } else if(studyPasses < 2) {
+                tempInt = tempInt - 2;
+                playSound("a_ko_" + neoStack.peak().getForeignWord() + ".mp3");
+                wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
             } else if(studyPasses < 3) {
-                studyModeText.setText("Reading Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
-            } else if(studyPasses < 5) {
-                studyModeText.setText("Memory Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                tempInt = tempInt - 4;
+                studyModeText.setText("Memory Phase " + tempInt + " - " + (newCards.size() - studyIndex) + " cards left.");
+                wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
             } else {
-                studyModeText.setText("Hearing Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                tempInt = tempInt - 6;
+                playSound("a_ko_" + neoStack.peak().getForeignWord() + ".mp3");
+                studyModeText.setText("Hearing Phase " + tempInt + " - " + (newCards.size() - studyIndex) + " cards left.");
+                wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
             }
             showAnswerButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Log.d(DEBUG_TAG, "reviewIndex: " + reviewIndex);
                     if(reviewIndex < reviewCardList.size()) {
-                        showAnswerButton.setText(newCards.get(studyIndex).getForeignWord());
+//                        showAnswerButton.setText(newCards.get(studyIndex).getForeignWord());
+                        showAnswerButton.setText(reviewCardList.get(reviewIndex).getForeignWord() + "-" + reviewCardList.get(reviewIndex).getNativeWord());
                     } else {
                         if(studyPasses < 1) {
                             //todo learning phase
+                            playSound("a_ko_" + neoStack.peak().getForeignWord() + ".mp3");
                             showAnswerButton.setText(neoStack.peak().getNativeWord());
                         }
-                        if (studyPasses < 3) {
+                        if (studyPasses < 2) {
+                            playSound("a_ko_" + newCards.get(studyIndex).getForeignWord() + ".mp3");
                             showAnswerButton.setText(newCards.get(studyIndex).getNativeWord()); //todo change this based on studypasses
-                        } else if (studyPasses < 5) {
+                        } else if (studyPasses < 3) {
+                            playSound("a_ko_" + newCards.get(studyIndex).getForeignWord() + ".mp3");
                             showAnswerButton.setText(newCards.get(studyIndex).getForeignWord());
                         } else {
                             //                        showAnswerButton.setText("♪♫♪");
                             showAnswerButton.setText(newCards.get(studyIndex).getForeignWord() + " - " + newCards.get(studyIndex).getNativeWord());
                         }
-                        //                    playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
+                        playSound("a_ko_" + newCards.get(studyIndex).getForeignWord() + ".mp3");
                     }
                     wrongAnswerButton.setClickable(true);
                     correctAnswerButton.setClickable(true);
@@ -435,6 +474,15 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             wrongAnswerButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    for (CardTable cT : newCards) {
+                        Log.d(DEBUG_TAG, "CardData: " + Integer.toString(cT.getIndexKey()) + "-" + cT.getForeignWord() + "-" + cT.getNativeWord() + " Factor: " + Double.toString(cT.getFactor()) +
+                                " Time: " + Long.toString(cT.getTime()) + " Days: " + cT.getDays() + " Streak: " + cT.getStreak());
+                    }
+                    for (CardTable cT : reviewCardList) {
+                        Log.d(DEBUG_TAG, "CardData: " + Integer.toString(cT.getIndexKey()) + "-" + cT.getForeignWord() + "-" + cT.getNativeWord() + " Factor: " + Double.toString(cT.getFactor()) +
+                                " Time: " + Long.toString(cT.getTime()) + " Days: " + cT.getDays() + " Streak: " + cT.getStreak());
+                    }
+                    Log.d(DEBUG_TAG, "\n");
                     if(reviewIndex < reviewCardList.size()) {
                         reviewHistory.push(0);
                         //modifycard so that days and streak become 0, calculate new e factor
@@ -454,9 +502,12 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                         if(reviewIndex >= reviewCardList.size()) {
                             //review done
                             neoStack = new NeoStack(newCards); //todo handle back button
-                            if (studyPasses < 3) {
+                            if(reviewIndex < reviewCardList.size()) {
+                                koreanWordButton.setText("♪♫♪");
+                                streakText.setText("");
+                            } else if (studyPasses < 2) {
                                 koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
-                            } else if (studyPasses < 5) {
+                            } else if (studyPasses < 3) {
                                 koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
                             } else {
                                 koreanWordButton.setText("♪♫♪");
@@ -492,23 +543,39 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                             }
                         }
                     }
-                    if (studyPasses < 3) {
+                    if(reviewIndex < reviewCardList.size()) {
+                        koreanWordButton.setText("♪♫♪");
+                        streakText.setText("");
+                    } else if (studyPasses < 2) {
                         koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
-                    } else if (studyPasses < 5) {
+                    } else if (studyPasses < 3) {
                         koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
                     } else {
                         koreanWordButton.setText("♪♫♪");
                     }
-                    if (reviewIndex < reviewCardList.size()) {
-                        studyModeText.setText("Reviewing: " + (reviewCardList.size() - reviewIndex) + " cards left.");
-                    } else if (studyPasses < 1) {
-                        studyModeText.setText("Learning Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
-                    } else if (studyPasses < 3) {
-                        studyModeText.setText("Reading Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
-                    } else if (studyPasses < 5) {
-                        studyModeText.setText("Memory Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    int tempInt = studyPasses;
+                    if(reviewIndex < reviewCardList.size()) {
+                        studyModeText.setText("Reviewing " + (reviewCardList.size() - reviewIndex) + " cards left.");
+                        playSound("a_ko_" + reviewCardList.get(reviewIndex).getForeignWord() + ".mp3");
+                    } else if(studyPasses < 1){
+                        studyModeText.setText("Learning Phase");
+                        playSound("a_ko_" + neoStack.peak().getForeignWord() + ".mp3");
+                        streakText.setText("Streak - " + neoStack.peak().getStreak());
+                    } else if(studyPasses < 2) {
+//                        playSound("a_ko_" + newCards.get(studyIndex).getForeignWord() + ".mp3");
+//                        Log.d(DEBUG_TAG, Integer.toString(tempInt));
+                        studyModeText.setText("Reading Phase " + tempInt + " - " + (newCards.size() - studyIndex) + " cards left.");
+                        wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
+                    } else if(studyPasses < 3) {
+                        tempInt = tempInt - 2;
+                        studyModeText.setText("Memory Phase " + tempInt + " - " + (newCards.size() - studyIndex) + " cards left.");
+                        wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
                     } else {
-                        studyModeText.setText("Hearing Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                        tempInt = tempInt - 4;
+//                        playSound("a_ko_" + neoStack.peak().getForeignWord() + ".mp3");
+                        playSound("a_ko_" + newCards.get(studyIndex).getForeignWord() + ".mp3");
+                        studyModeText.setText("Hearing Phase " + tempInt + " - " + (newCards.size() - studyIndex) + " cards left.");
+                        wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
                     }
                     showAnswerButton.setText("?");
                     correctAnswerButton.setClickable(false);
@@ -518,6 +585,15 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             undoButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    for (CardTable cT : newCards) {
+                        Log.d(DEBUG_TAG, "CardData: " + Integer.toString(cT.getIndexKey()) + "-" + cT.getForeignWord() + "-" + cT.getNativeWord() + " Factor: " + Double.toString(cT.getFactor()) +
+                                " Time: " + Long.toString(cT.getTime()) + " Days: " + cT.getDays() + " Streak: " + cT.getStreak());
+                    }
+                    for (CardTable cT : reviewCardList) {
+                        Log.d(DEBUG_TAG, "CardData: " + Integer.toString(cT.getIndexKey()) + "-" + cT.getForeignWord() + "-" + cT.getNativeWord() + " Factor: " + Double.toString(cT.getFactor()) +
+                                " Time: " + Long.toString(cT.getTime()) + " Days: " + cT.getDays() + " Streak: " + cT.getStreak());
+                    }
+                    Log.d(DEBUG_TAG, "\n");
                     int tempAnswer;
                     if(reviewIndex <= reviewCardList.size() && reviewIndex != 0 && studyIndex == 0 && studyPasses == 0) {
                         //review process, regardless of edge case (just began, in the middle, at the end) the process is the same
@@ -552,29 +628,56 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                         }
                     }
                     //todo do we need a final else?
-                    if (studyPasses < 3) {
+                    if(reviewIndex < reviewCardList.size()) {
+                        koreanWordButton.setText("♪♫♪");
+                        streakText.setText("");
+                    } else if (studyPasses < 2) {
                         koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
-                    } else if (studyPasses < 5) {
+                    } else if (studyPasses < 3) {
                         koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
                     } else {
                         koreanWordButton.setText("♪♫♪");
                     }
-                    if (reviewIndex < reviewCardList.size()) {
-                        studyModeText.setText("Reviewing: " + (reviewCardList.size() - reviewIndex) + " cards left.");
-                    } else if (studyPasses < 1) {
-                        studyModeText.setText("Learning Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
-                    } else if (studyPasses < 3) {
-                        studyModeText.setText("Reading Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
-                    } else if (studyPasses < 5) {
-                        studyModeText.setText("Memory Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    int tempInt = studyPasses;
+                    if(reviewIndex < reviewCardList.size()) {
+                        studyModeText.setText("Reviewing " + (reviewCardList.size() - reviewIndex) + " cards left.");
+                        playSound("a_ko_" + reviewCardList.get(reviewIndex).getForeignWord() + ".mp3");
+                    } else if(studyPasses < 1){
+                        studyModeText.setText("Learning Phase");
+                        playSound("a_ko_" + neoStack.peak().getForeignWord() + ".mp3");
+                        streakText.setText("Streak - " + neoStack.peak().getStreak());
+                    } else if(studyPasses < 2) {
+//                        playSound("a_ko_" + newCards.get(studyIndex).getForeignWord() + ".mp3");
+//                        Log.d(DEBUG_TAG, Integer.toString(tempInt));
+                        studyModeText.setText("Reading Phase " + tempInt + " - " + (newCards.size() - studyIndex) + " cards left.");
+                        wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
+                    } else if(studyPasses < 3) {
+                        tempInt = tempInt - 2;
+                        studyModeText.setText("Memory Phase " + tempInt + " - " + (newCards.size() - studyIndex) + " cards left.");
+                        wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
                     } else {
-                        studyModeText.setText("Hearing Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                        tempInt = tempInt - 4;
+//                        playSound("a_ko_" + neoStack.peak().getForeignWord() + ".mp3");
+                        playSound("a_ko_" + newCards.get(studyIndex).getForeignWord() + ".mp3");
+                        studyModeText.setText("Hearing Phase " + tempInt + " - " + (newCards.size() - studyIndex) + " cards left.");
+                        wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
                     }
                 }
             });
             correctAnswerButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+//                    for (CardTable cT : newCards) {
+//                        Log.d(DEBUG_TAG, "New CardData: " + Integer.toString(cT.getIndexKey()) + "-" + cT.getForeignWord() + "-" + cT.getNativeWord() + " Factor: " + Double.toString(cT.getFactor()) +
+//                                " Time: " + Long.toString(cT.getTime()) + " Days: " + cT.getDays() + " Streak: " + cT.getStreak());
+//                    }
+//                    for (CardTable cT : reviewCardList) {
+//                        Log.d(DEBUG_TAG, "Review CardData: " + Integer.toString(cT.getIndexKey()) + "-" + cT.getForeignWord() + "-" + cT.getNativeWord() + " Factor: " + Double.toString(cT.getFactor()) +
+//                                " Time: " + Long.toString(cT.getTime()) + " Days: " + cT.getDays() + " Streak: " + cT.getStreak());
+//                    }
+//                    Log.d(DEBUG_TAG, "\nReview Index: " + reviewIndex);
+//                    Log.d(DEBUG_TAG, "ReviewCardList Size : " + reviewCardList.size());
+                    Log.d(DEBUG_TAG, "StudyIndex: " + studyIndex);
                     if(reviewIndex < reviewCardList.size()) {
                         reviewHistory.push(1);
                         //todo
@@ -584,19 +687,26 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                         reviewIndex += 1;
                         if(reviewIndex >= reviewCardList.size()) {
                             neoStack = new NeoStack(newCards); //todo handle back button
-                            if (studyPasses < 3) {
+                            if(reviewIndex < reviewCardList.size()) {
+                                //todo reviewDone
+                                koreanWordButton.setText("♪♫♪");
+                                streakText.setText("");
+                            } else if (studyPasses < 2) {
                                 koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
-                            } else if (studyPasses < 5) {
+                            } else if (studyPasses < 3) {
                                 koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
                             } else {
                                 koreanWordButton.setText("♪♫♪");
                             }
                         }
                     } else {
+                        Log.d(DEBUG_TAG, "StudyPasses: " + studyPasses);
                         if(studyPasses==0) {
+                            Log.d(DEBUG_TAG, "Here");
                             //todo study logic
                             studyHistory.push(neoStack.peak().getIndexKey());
                             studyHistory.push(-1); //-1 for correct and 1 for incorrect, index followed by this value in pairs
+
                             if(neoStack.peak().getStreak() < 4) {
                                 neoStack.peak().setStreak(neoStack.peak().getStreak() + 1);
                             }
@@ -606,12 +716,15 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                                 studyPasses += 1;
                             }
                         } else {
+                            Log.d(DEBUG_TAG, "There");
                             studyHistory.push(1);
                             studyIndex += 1;
+                            Log.d(DEBUG_TAG, "newCards Size: " + newCards.size());
+                            Log.d(DEBUG_TAG, "studyIndex: " + studyIndex);
                             if (studyIndex >= newCards.size()) {
                                 if (wrongStudyAnswers == 0) {
                                     studyPasses += 1;
-                                    if (studyPasses >= 7) {
+                                    if (studyPasses >= 4) {
                                         for (CardTable cT : newCards) {
                                             Log.d(DEBUG_TAG, "Card done: " + cT.getIndexKey() + "-" + cT.getNativeWord());
                                             cardDone(cT, 5);
@@ -632,23 +745,46 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
                             }
                         }
                     }
-                    if (studyPasses < 2) {
+//                    if (studyPasses < 1) {
+//                        koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
+//                    } else if (studyPasses < 3) {
+//                        koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
+//                    } else {
+//                        koreanWordButton.setText("♪♫♪");
+//                    }
+                    if(reviewIndex < reviewCardList.size()) {
+                        koreanWordButton.setText("♪♫♪");
+                        streakText.setText("");
+                    } else if (studyPasses < 2) {
                         koreanWordButton.setText(newCards.get(studyIndex).getForeignWord());//todo change this for other two versions
-                    } else if (studyPasses < 4) {
+                    } else if (studyPasses < 3) {
                         koreanWordButton.setText(newCards.get(studyIndex).getNativeWord());
                     } else {
                         koreanWordButton.setText("♪♫♪");
                     }
-                    if (reviewIndex < reviewCardList.size()) {
-                        studyModeText.setText("Reviewing: " + (reviewCardList.size() - reviewIndex) + " cards left.");
-                    } else if (studyPasses < 1) {
-                        studyModeText.setText("Learning Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
-                    } else if (studyPasses < 3) {
-                        studyModeText.setText("Reading Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
-                    } else if (studyPasses < 5) {
-                        studyModeText.setText("Memory Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                    int tempInt = studyPasses;
+                    if(reviewIndex < reviewCardList.size()) {
+                        studyModeText.setText("Reviewing " + (reviewCardList.size() - reviewIndex) + " cards left.");
+                        playSound("a_ko_" + reviewCardList.get(reviewIndex).getForeignWord() + ".mp3");
+                    } else if(studyPasses < 1){
+                        studyModeText.setText("Learning Phase");
+                        playSound("a_ko_" + neoStack.peak().getForeignWord() + ".mp3");
+                        streakText.setText("Streak - " + neoStack.peak().getStreak());
+                    } else if(studyPasses < 2) {
+//                        playSound("a_ko_" + newCards.get(studyIndex).getForeignWord() + ".mp3");
+//                        Log.d(DEBUG_TAG, Integer.toString(tempInt));
+                        studyModeText.setText("Reading Phase " + tempInt + " - " + (newCards.size() - studyIndex) + " cards left.");
+                        wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
+                    } else if(studyPasses < 3) {
+                        tempInt = tempInt - 2;
+                        studyModeText.setText("Memory Phase " + tempInt + " - " + (newCards.size() - studyIndex) + " cards left.");
+                        wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
                     } else {
-                        studyModeText.setText("Hearing Phase, " + (newCards.size() - studyIndex) + " cards left.\nIncorrect Answers: " + wrongAnswerText);
+                        tempInt = tempInt - 4;
+//                        playSound("a_ko_" + neoStack.peak().getForeignWord() + ".mp3");
+                        playSound("a_ko_" + newCards.get(studyIndex).getForeignWord() + ".mp3");
+                        studyModeText.setText("Hearing Phase " + tempInt + " - " + (newCards.size() - studyIndex) + " cards left.");
+                        wrongAnswersText.setText("Incorrect Answers: " + wrongStudyAnswers);
                     }
                     showAnswerButton.setText("?");
                     correctAnswerButton.setClickable(false);
@@ -673,7 +809,8 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     if(!waitingTimer) {
-                        playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
+                        Log.d(DEBUG_TAG, "Tag: " + allCardList.get(position).getForeignWord());
+                        playSound("a_ko_" + allCardList.get(position).getForeignWord() + ".mp3");
                     }
                 }
             });
@@ -698,7 +835,33 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             setContentView(R.layout.settings_layout);
             constraintLayout=(ConstraintLayout)findViewById(R.id.settingLayout);
             chooseBackground(backgroundID);
-            builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogTheme);
+
+            switch(backgroundID){
+                case(0):
+                    builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogThemeRed);
+                    break;
+                case(1):
+                    builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogThemeOrange);
+                    break;
+                case(2):
+                    builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogThemeYellow);
+                    break;
+                case(3):
+                    builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogThemeGreen);
+                    break;
+                case(4):
+                    builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogThemeBlue);
+                    break;
+                case(5):
+                    builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogThemePurple);
+                    break;
+                case(6):
+                    builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogThemePink);
+                    break;
+                case(7):
+                    builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogThemeGrey);
+                    break;
+            }
             builder.setTitle("Words Per Day");
             builder.setPositiveButton("Tomorrow", new DialogInterface.OnClickListener() {
                 @Override
@@ -960,7 +1123,8 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     if(!waitingTimer) {
-                        playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
+                        Log.d(DEBUG_TAG, "Tag: " + allCardList.get(position).getForeignWord());
+                        playSound("a_ko_" + allCardList.get(position).getForeignWord() + ".mp3");
                     }
                 }
             });
@@ -975,16 +1139,26 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             constraintLayout=(ConstraintLayout)findViewById(R.id.study_preview_layout);
             chooseBackground(backgroundID);
 
+            previewText = findViewById(R.id.searchButton);
             studyPreviewStart = findViewById(R.id.studyPreviewStart);
             studyPreviewListView = findViewById(R.id.studyPreviewListView);
 
-            customAdapter = new CustomAdapter(this, R.layout.customlayout, newCards, sdk);
+            if((MainActivity.cardDatabase.cardDao().getLearnedWords().size())==100){
+                previewText.setText("Review Cards");
+                customAdapter = new CustomAdapter(this, R.layout.customlayout, reviewCardList, sdk);
+            } else {
+                customAdapter = new CustomAdapter(this, R.layout.customlayout, newCards, sdk);
+            }
             studyPreviewListView.setAdapter(customAdapter);
             studyPreviewListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    if(!waitingTimer) {
-                        playSound("en" + Integer.toString(tempCard.getIndexKey()) + "_" + tempCard.getForeignWord() + ".mp3");
+                    if(!waitingTimer) {//todo swap to review
+                        if((MainActivity.cardDatabase.cardDao().getLearnedWords().size())==100) {
+                            playSound("a_ko_" + reviewCardList.get(position).getForeignWord() + ".mp3");
+                        }else {
+                            playSound("a_ko_" + newCards.get(position).getForeignWord() + ".mp3");
+                        }
                     }
                 }
             });
@@ -1180,21 +1354,27 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         BufferedReader bufferedReader = null;
         try {
 //            bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open("WordPairs.txt"), "UTF-8"));
-            bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open("Sorted_Final.txt"), "UTF-8"));
+            bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open("My_Korean.txt"), "UTF-8"));
 
             String tempLine;
             String[] splitTempLine;
             int loopIndex = 0;
             while((tempLine = bufferedReader.readLine()) != null) {
-                splitTempLine = tempLine.split(",", 10);
+                splitTempLine = tempLine.split("\t", 10);
 ////                Log.d(DEBUG_TAG, tempLine + "\tsplitTempLine Length: " + Integer.toString(splitTempLine.length));
 //                Log.d(DEBUG_TAG, splitTempLine[0].trim());
 //                Log.d(DEBUG_TAG, splitTempLine[1].trim());
+//                if(splitTempLine[1].trim().equals("v")){
+//                    Log.d(DEBUG_TAG, "Verb found" + splitTempLine);
+//                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(loopIndex, splitTempLine[0].trim(), splitTempLine[2].trim(), splitTempLine[1].trim(), 2.5, Long.MAX_VALUE, 0, 0, splitTempLine[3].trim(), splitTempLine[4].trim(), splitTempLine[5].trim(), splitTempLine[6].trim()));
+//                } else {
+//                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(loopIndex, splitTempLine[0].trim(), splitTempLine[2].trim(), splitTempLine[1].trim(), 2.5, Long.MAX_VALUE, 0, 0, null, null, null, null));
+//                }
                 if(splitTempLine[1].trim().equals("v")){
                     Log.d(DEBUG_TAG, "Verb found" + splitTempLine);
-                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(Integer.parseInt(splitTempLine[0].trim()), splitTempLine[1].trim(), splitTempLine[2].trim(), splitTempLine[3].trim(), 2.5, Long.MAX_VALUE, 0, 0, splitTempLine[4].trim(), splitTempLine[5].trim(), splitTempLine[6].trim(), splitTempLine[7].trim()));
+                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(loopIndex, splitTempLine[0].trim(), splitTempLine[2].trim(), splitTempLine[1].trim(), 2.5, Long.MAX_VALUE, 0, 0, splitTempLine[3].trim(), splitTempLine[4].trim(), splitTempLine[5].trim(), splitTempLine[6].trim()));
                 } else {
-                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(Integer.parseInt(splitTempLine[0].trim()), splitTempLine[1].trim(), splitTempLine[2].trim(), splitTempLine[3].trim(), 2.5, Long.MAX_VALUE, 0, 0, null, null, null, null));
+                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(loopIndex, splitTempLine[0].trim(), splitTempLine[2].trim(), splitTempLine[1].trim(), 2.5, Long.MAX_VALUE, 0, 0, null, null, null, null));
                 }
                 loopIndex += 1;
             }
@@ -1230,20 +1410,26 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         BufferedReader bufferedReader = null;
         try {
 //            bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open("WordPairs.txt"), "UTF-8"));
-            bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open("Sorted_Final.txt"), "UTF-8"));
+            bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open("My_Korean.txt"), "UTF-8"));
 
             String tempLine;
             String[] splitTempLine;
             int loopIndex = 0;
             while((tempLine = bufferedReader.readLine()) != null) {
-                splitTempLine = tempLine.split(",", 10);
+                splitTempLine = tempLine.split("\t", 10);
 ////                Log.d(DEBUG_TAG, tempLine + "\tsplitTempLine Length: " + Integer.toString(splitTempLine.length));
 //                Log.d(DEBUG_TAG, splitTempLine[0].trim());
 //                Log.d(DEBUG_TAG, splitTempLine[1].trim());
-                if(splitTempLine[1].trim().equals('v')){
-                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(Integer.parseInt(splitTempLine[0].trim()), splitTempLine[1].trim(), splitTempLine[2].trim(), splitTempLine[3].trim(), 2.5, Long.MAX_VALUE, 0, 0, splitTempLine[4].trim(), splitTempLine[5].trim(), splitTempLine[6].trim(), splitTempLine[7].trim()));
+//                if(splitTempLine[1].trim().equals('v')){
+////                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(Integer.parseInt(splitTempLine[0].trim()), splitTempLine[1].trim(), splitTempLine[2].trim(), splitTempLine[3].trim(), 2.5, Long.MAX_VALUE, 0, 0, splitTempLine[4].trim(), splitTempLine[5].trim(), splitTempLine[6].trim(), splitTempLine[7].trim()));
+////                } else {
+////                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(Integer.parseInt(splitTempLine[0].trim()), splitTempLine[1].trim(), splitTempLine[2].trim(), splitTempLine[3].trim(), 2.5, Long.MAX_VALUE, 0, 0, null, null, null, null));
+////                }
+                if(splitTempLine[1].trim().equals("v")){
+                    Log.d(DEBUG_TAG, "Verb found" + splitTempLine);
+                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(loopIndex, splitTempLine[0].trim(), splitTempLine[2].trim(), splitTempLine[1].trim(), 2.5, Long.MAX_VALUE, 0, 0, splitTempLine[3].trim(), splitTempLine[4].trim(), splitTempLine[5].trim(), splitTempLine[6].trim()));
                 } else {
-                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(Integer.parseInt(splitTempLine[0].trim()), splitTempLine[1].trim(), splitTempLine[2].trim(), splitTempLine[3].trim(), 2.5, Long.MAX_VALUE, 0, 0, null, null, null, null));
+                    MainActivity.cardDatabase.cardDao().addCard(new CardTable(loopIndex, splitTempLine[0].trim(), splitTempLine[2].trim(), splitTempLine[1].trim(), 2.5, Long.MAX_VALUE, 0, 0, null, null, null, null));
                 }
                 loopIndex += 1;
             }
@@ -1367,10 +1553,10 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
 //            newDayMilli = (System.currentTimeMillis() - (System.currentTimeMillis() % 86400000L) + 86400000L + newDayMilliExtra); //current time reduced to its original start time
             tempCalendar = Calendar.getInstance();
             tempCalendar.set(Calendar.HOUR_OF_DAY, 0);
-            newDayMilli = tempCalendar.getTimeInMillis();
-            newDayMilli = newDayMilli + 86400000L + newDayMilliExtra; //current time reduced to its original start time
+//            newDayMilli = tempCalendar.getTimeInMillis();
+            newDayMilli = newDayMilli + 86400000L + newDayMilliExtra; //current time reduced to its original start time //todo this is the one you need
             Log.d(DEBUG_TAG, "New, new day time - " + tempCalendar.get(Calendar.HOUR_OF_DAY) + ":" + tempCalendar.get(Calendar.MINUTE));
-//            newDayMilli = newDayMilli + 86400000L;
+//            newDayMilli = newDayMilli + 120000;
             wordsFinishedToday = 0;
             dayDone = false;
             //clear newlist?
@@ -1437,7 +1623,13 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         //make sure the to is less than the size and greater than
         if(oldCardsPerDay - wordsFinishedToday  >= 0) {
 //            ArrayList<CardTable> cardsToAddTemp = new ArrayList<>(new ArrayList<>(MainActivity.cardDatabase.cardDao().getNewCards(Long.MAX_VALUE)).subList(oldCardsPerDay, cardsPerDay - wordsFinishedToday));
-            ArrayList<CardTable> cardsToAddTemp = new ArrayList<>(new ArrayList<>(MainActivity.cardDatabase.cardDao().getNewCards(Long.MAX_VALUE)).subList(oldCardsPerDay - wordsFinishedToday, cardsPerDay - wordsFinishedToday));
+            ArrayList<CardTable> tempNewCards = new ArrayList<>(MainActivity.cardDatabase.cardDao().getNewCards(Long.MAX_VALUE));
+            ArrayList<CardTable> cardsToAddTemp;
+            if(cardsPerDay - wordsFinishedToday > tempNewCards.size()) {
+                cardsToAddTemp = new ArrayList<>(tempNewCards.subList(oldCardsPerDay - wordsFinishedToday, tempNewCards.size()));
+            } else {
+                cardsToAddTemp = new ArrayList<>(tempNewCards.subList(oldCardsPerDay - wordsFinishedToday, cardsPerDay - wordsFinishedToday));
+            }
             for (CardTable cT : cardsToAddTemp) {
                 cT.setTime(0L);
                 newCards.add(cT);
@@ -1554,10 +1746,22 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             }
             Log.d(DEBUG_TAG, "finished words: " + finishedWords);
 
+            for(CardTable cT : initialNewCardList) {
+                if(cT.getIndexKey() == cardTable.getIndexKey()) {
+                    cardTable.setStreak(cT.getStreak());
+                }
+            }
+            for(CardTable cT : initialReviewList) {
+                if(cT.getIndexKey() == cardTable.getIndexKey()) {
+                    cardTable.setStreak(cT.getStreak());
+                }
+            }
+
             cardTable.setStreak(cardTable.getStreak() + 1);
             cardTable.setFactor(calEasinessFactor(cardTable.getFactor(), answerQuality)); //probably wrong
             cardTable.setDays(calRepetitionInterval(cardTable.getDays(), cardTable.getFactor()));
-            cardTable.setTime(newDayMilli + ((86400000) * (cardTable.getDays() - 1)));
+//            cardTable.setTime(newDayMilli + ((86400000) * (cardTable.getDays() - 1)));
+            cardTable.setTime(newDayMilli + ((120000) * (cardTable.getDays() - 1)));
             MainActivity.cardDatabase.cardDao().updateCard(cardTable);
             wordsFinishedToday += 1;
             editor.putInt(WORDS_FINISHED_TODAY, wordsFinishedToday);
@@ -1661,6 +1865,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         Log.d(DEBUG_TAG, "Path: " + path);
         File directory = new File(path);
         File[] files = directory.listFiles();
+        //todo null check
         Log.d(DEBUG_TAG, "Size: " + files.length);
 
         updatedChangeLayout(6);
@@ -1829,7 +2034,7 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
         }
     }
     public void openDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogTheme);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.MyTimePickerDialogThemeBlack);
         builder.setMessage("Are you sure you want to reset your deck and delete your progress? Hold 'Yes' to confirm.")
                 .setCancelable(false)
 //                .setPositiveButton("No", new DialogInterface.OnClickListener() {
@@ -1947,8 +2152,9 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             this.cards = cards;
         }
         public void push(int index, CardTable cT) {
-            if(index == 4) {
-               this.cards.add(cards.size() - 1, cT);
+            if(cT.getStreak() == 4) {
+//                this.cards.add(cards.size() - 1, cT);
+                this.cards.add(cards.size(), cT);
             } else {
                 if(index >= this.cards.size()) {
                     this.cards.add(cT);
@@ -1981,8 +2187,24 @@ public class MainActivity extends Activity implements TimePickerDialog.OnTimeSet
             }
         }
     }
-    public void cardsPerDayChoice() {
-
+    public void logDatabase() {
+        boolean stillLog = true;
+        int tempIndex = 0;
+        Log.d(DEBUG_TAG, "NewCards Size: " + newCards.size());
+        Log.d(DEBUG_TAG, "ReviewCards Size: " + reviewCardList.size());
+        Log.d(DEBUG_TAG, "Index\tStreak\tDifficulty");
+        while(stillLog) {
+            if(MainActivity.cardDatabase.cardDao().getCard(tempIndex).getTime() != Long.MAX_VALUE) {
+                Log.d(DEBUG_TAG, MainActivity.cardDatabase.cardDao().getCard(tempIndex).getIndexKey() + "\t" + MainActivity.cardDatabase.cardDao().getCard(tempIndex).getStreak() + "\t" + MainActivity.cardDatabase.cardDao().getCard(tempIndex).getFactor());
+            } else {
+                stillLog = false;
+                Log.d(DEBUG_TAG, "DayDone\n");
+            }
+            tempIndex = tempIndex + 1;
+            if(tempIndex==100) {
+                break;
+            }
+        }
     }
 }
 

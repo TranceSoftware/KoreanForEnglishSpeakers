@@ -47,6 +47,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginBottom="136dp"
+        android:paddingHorizontal="10dp"
         android:text="show"
         android:textSize="20dp"
         android:visibility="visible"
@@ -141,5 +142,28 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/streakText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Streak - "
+        android:textSize="20dp"
+        android:textColor="@color/Black"
+        app:layout_constraintBottom_toTopOf="@+id/KoreanWordText"
+        app:layout_constraintEnd_toEndOf="@+id/KoreanWordText"
+        app:layout_constraintStart_toStartOf="@+id/KoreanWordText" />
+
+    <TextView
+        android:id="@+id/wrongAnswersText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Wrong Answers - "
+        android:textSize="20dp"
+        android:textColor="@color/Black"
+        app:layout_constraintEnd_toEndOf="@+id/ModeTextView"
+        app:layout_constraintStart_toStartOf="@+id/ModeTextView"
+        app:layout_constraintTop_toBottomOf="@+id/ModeTextView" />
 
 </android.support.constraint.ConstraintLayout>

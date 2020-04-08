@@ -9,7 +9,7 @@
     <item>
         <shape android:shape="rectangle">
             <padding android:left="10dp" android:right="10dp" android:top="10dp"/>
-            <solid android:color="@color/CreamRed"/>
+            <solid android:color="@color/CremeRed"/>
             <corners android:topLeftRadius="20dp" android:topRightRadius="20dp"
                 android:bottomLeftRadius="0dp" android:bottomRightRadius="0dp"/>
 

@@ -30,7 +30,8 @@ public interface CardDao {
     @Query("SELECT * FROM cards WHERE time != :l")
     List<CardTable> getModifiedCards(Long l); //must be handed Long.MAX_VALUE to work properly
 
-    @Query("SELECT * FROM cards WHERE streak > 0")
+//    @Query("SELECT * FROM cards WHERE streak > 0")
+@Query("SELECT * FROM cards WHERE time != 9223372036854775807")
     List<CardTable> getLearnedWords();
 
     @Query("SELECT * FROM cards WHERE time == :l")
